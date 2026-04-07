@@ -187,19 +187,18 @@
             display: flex;
             gap: 8px;
         }
-        .input-buttons button {
+        .input-buttons button, #plusBtn {
             background: none;
             border: none;
             font-size: 28px;
             padding: 8px;
             cursor: pointer;
-            border-radius: 30px;
-            transition: 0.2s;
+            color: #007AFF;
         }
-            #triggerBtn { background: none; color: #007AFF; }
-            #appendBtn { background: none; color: #007AFF; }
-            #plusBtn { background: none; color: #007AFF; font-size: 28px; padding: 8px 12px; }
-                    .plus-menu {
+        #plusBtn {
+            padding: 8px 12px;
+        }
+        .plus-menu {
             position: fixed;
             bottom: 80px;
             left: 20px;
@@ -218,15 +217,20 @@
             padding: 8px;
             cursor: pointer;
         }
-        /* 状态栏 - 移到输入框上方 */
+        /* 状态栏 - 无背景，不压底栏 */
         .status {
-            padding: 6px 12px;
-            font-size: 11px;
+            padding: 4px 12px;
+            font-size: 12px;
             color: #8E8E93;
-            background: #F2F2F7;
+            background: transparent;
             text-align: center;
             flex-shrink: 0;
-            border-top: 0.5px solid #C6C6C8;
+            min-height: 28px;
+            line-height: 1.2;
+        }
+        /* 无文字时隐藏 */
+        .status:empty {
+            display: none;
         }
         /* 模态框 */
         .modal, .fullscreen-modal {
@@ -294,10 +298,28 @@
             background: #FFFFFF;
             display: flex;
             align-items: center;
+            justify-content: center;
+            position: relative;
             border-bottom: 0.5px solid #C6C6C8;
         }
-        .fullscreen-header button { background: none; border: none; font-size: 24px; color: #007AFF; padding: 8px; }
-        .fullscreen-header .title { flex: 1; text-align: center; font-weight: 600; color: #000; }
+        .fullscreen-header button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #007AFF;
+            padding: 8px;
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .fullscreen-header .title {
+            font-weight: 600;
+            font-size: 17px;
+            color: #000;
+            text-align: center;
+            margin: 0;
+        }
         .fullscreen-content { padding: 16px; width: 100%; overflow-y: auto; }
         .section { margin-bottom: 24px; border-bottom: 1px solid #C6C6C8; padding-bottom: 16px; }
         .section-title { font-weight: 600; margin-bottom: 12px; font-size: 16px; color: #000; cursor: pointer; user-select: none; }
@@ -448,11 +470,16 @@
     let userSetting = "", fullPersona = "";
     let visibleLimit = 30, contextLimit = 150, summaryThreshold = 200, summaryPromptTemplate = "";
 
-    // 辅助函数
+    // 辅助函数 - 只显示“对方正在输入...”
     function setStatus(msg, isError = false) {
+        if (msg !== '对方正在输入...') {
+            return;
+        }
         statusSpan.innerText = msg;
         statusSpan.style.color = isError ? "#FF3B30" : "#007AFF";
-        setTimeout(() => { if (statusSpan.innerText === msg) statusSpan.innerText = ""; }, 3000);
+    }
+    function clearStatus() {
+        statusSpan.innerText = '';
     }
 
     function saveToLocal() {
@@ -508,7 +535,6 @@
             let longText = longTermEntries.map(entry => `【${entry.title}】\n${entry.content}`).join('\n\n');
             parts.push(longText);
         }
-        // 强化心声要求
         parts.push(`【极其重要】每次回复末尾必须单独一行输出以下JSON，绝对不能忘记，绝对不能缺少：
 {"heart": "心声（一句话，精准短小）","scene": "画面（第三人称，文学感）","emotion": "情绪（第一人称短句）","thought": "想法（详细长篇）","chain": "思维链概括（30-50字）"}
 请确保该JSON之前有一个空行。正常回复内容中不要包含此JSON。如果你不输出这个JSON，系统将无法记录心声，你会受到惩罚。`);
@@ -517,7 +543,6 @@
     }
 
     function parseAIResponse(raw) {
-        // 提取 JSON 块
         let jsonMatch = raw.match(/\n?\s*\{[^{]*"heart"[^}]*\}/);
         let jsonObj = null;
         let cleanText = raw;
@@ -528,11 +553,9 @@
             } catch(e) {}
         }
         if (!jsonObj) {
-            // 尝试更宽松的匹配
             const heartMatch = raw.match(/"heart"\s*:\s*"([^"]+)"/);
             if (heartMatch) {
                 jsonObj = { heart: heartMatch[1] };
-                // 尝试提取其他字段
                 const sceneMatch = raw.match(/"scene"\s*:\s*"([^"]+)"/);
                 if (sceneMatch) jsonObj.scene = sceneMatch[1];
                 const emotionMatch = raw.match(/"emotion"\s*:\s*"([^"]+)"/);
@@ -555,10 +578,8 @@
             }
             saveToLocal();
         } else {
-            // 如果没有找到任何心声，设置默认值
             currentHeart = { heart: "（暂无心声）", scene: "", emotion: "", thought: "" };
         }
-        // 移除可能残留的 <br> 标签
         cleanText = cleanText.replace(/<br\s*\/?>/gi, '\n');
         return cleanText;
     }
@@ -589,7 +610,6 @@
             const rowDiv = document.createElement('div');
             rowDiv.className = `message-row ${isUser ? 'user-row' : 'assistant-row'}`;
 
-            // 左侧头像（仅AI）
             if (!isUser) {
                 const avatarDiv = document.createElement('div');
                 avatarDiv.className = `avatar ${!showAvatar ? 'avatar-placeholder' : ''}`;
@@ -610,7 +630,6 @@
                 rowDiv.appendChild(avatarDiv);
             }
 
-            // 气泡包装器（包含气泡和时间戳）
             const bubbleWrapper = document.createElement('div');
             bubbleWrapper.className = 'bubble-wrapper';
             const bubbleDiv = document.createElement('div');
@@ -626,7 +645,6 @@
             contentDiv.innerText = msg.content || '';
             bubbleDiv.appendChild(contentDiv);
             bubbleWrapper.appendChild(bubbleDiv);
-            // 只在同角色最后一条显示时间戳
             if (isLastOfSame && msg.timestamp) {
                 const timestampDiv = document.createElement('div');
                 timestampDiv.className = 'timestamp';
@@ -635,7 +653,6 @@
             }
             rowDiv.appendChild(bubbleWrapper);
 
-            // 右侧头像（仅用户）
             if (isUser) {
                 const avatarDiv = document.createElement('div');
                 avatarDiv.className = `avatar ${!showAvatar ? 'avatar-placeholder' : ''}`;
@@ -651,7 +668,6 @@
                 rowDiv.appendChild(avatarDiv);
             }
 
-            // 点击消息弹出菜单（短按）
             rowDiv.addEventListener('click', (e) => {
                 if (e.target.tagName === 'BUTTON') return;
                 showContextMenu(e, msg, i + currentStartIndex);
@@ -694,7 +710,8 @@
         copyBtn.innerText = '📋';
         copyBtn.onclick = () => {
             navigator.clipboard.writeText(msg.content);
-            setStatus('已复制');
+            clearStatus();
+            setStatus('已复制'); // 但 setStatus 会过滤掉，所以不显示
             menu.remove();
         };
         menu.appendChild(editBtn);
@@ -761,19 +778,19 @@
     function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
 
     function appendUserMessage(text, imageBase64 = null) {
-        if (!text && !imageBase64) { setStatus('消息不能为空', true); return; }
+        if (!text && !imageBase64) { clearStatus(); return; }
         const msg = { role: 'user', content: text || '', timestamp: new Date().toLocaleTimeString() };
         if (imageBase64) msg.image = imageBase64;
         fullConversation.push(msg);
         saveToLocal();
         renderChat();
-        setStatus('已追加');
+        clearStatus();
     }
 
     async function triggerAI() {
         let text = userInput.value.trim();
         let pendingImage = window.pendingImageBase64 || null;
-        if (!text && !pendingImage) { setStatus('消息不能为空', true); return; }
+        if (!text && !pendingImage) { clearStatus(); return; }
         if (!apiUrl || !apiKey) { setStatus('请先配置API', true); return; }
         const userMsg = { role: 'user', content: text || '', timestamp: new Date().toLocaleTimeString() };
         if (pendingImage) userMsg.image = pendingImage;
@@ -820,8 +837,8 @@
             }
             saveToLocal();
             renderChat();
-            setStatus('');
-        } catch(err) { setStatus('错误: '+err.message, true); }
+            clearStatus();
+        } catch(err) { setStatus('对方正在输入...', true); clearStatus(); }
     }
 
     async function regenerate() {
@@ -829,7 +846,7 @@
         for (let i = fullConversation.length-1; i >= 0; i--) {
             if (fullConversation[i].role === 'user') { lastUserIdx = i; break; }
         }
-        if (lastUserIdx === -1) { setStatus('没有用户消息可重新生成', true); return; }
+        if (lastUserIdx === -1) { clearStatus(); return; }
         fullConversation = fullConversation.slice(0, lastUserIdx+1);
         if (!apiUrl || !apiKey) { setStatus('请配置API', true); return; }
         buildSystemPrompt();
@@ -869,8 +886,8 @@
             }
             saveToLocal();
             renderChat();
-            setStatus('');
-        } catch(err) { setStatus('错误: '+err.message, true); }
+            clearStatus();
+        } catch(err) { setStatus('对方正在输入...', true); clearStatus(); }
     }
 
     function selectImage() {
@@ -883,7 +900,7 @@
                 const reader = new FileReader();
                 reader.onload = (ev) => {
                     window.pendingImageBase64 = ev.target.result;
-                    setStatus('图片已选，可输入文字后发送');
+                    clearStatus();
                 };
                 reader.readAsDataURL(file);
             }
@@ -891,7 +908,6 @@
         input.click();
     }
 
-    // 长期记忆UI
     function renderLongTermUI(container) {
         container.innerHTML = '';
         longTermEntries.forEach((entry, idx) => {
@@ -1019,7 +1035,7 @@
     async function manualSummarize() {
         if (!apiUrl || !apiKey) { setStatus('请先配置API', true); return; }
         const total = fullConversation.length;
-        if (lastSummaryIndex >= total) { setStatus('没有新消息需要总结', false); return; }
+        if (lastSummaryIndex >= total) { clearStatus(); return; }
         const newMessages = fullConversation.slice(lastSummaryIndex);
         const newCount = newMessages.length;
         const threshold = summaryThreshold;
@@ -1045,13 +1061,13 @@
             longTermEntries.push({ title: `总结 ${timestamp}`, content: summary });
             lastSummaryIndex = total;
             saveToLocal();
-            setStatus('总结已添加到长期记忆');
+            clearStatus();
             const settingsModal = document.querySelector('.fullscreen-modal');
             if (settingsModal) {
                 const container = settingsModal.querySelector('#longTermContainer');
                 if (container) renderLongTermUI(container);
             }
-        } catch(err) { setStatus('总结失败: '+err.message, true); }
+        } catch(err) { setStatus('总结失败: '+err.message, true); clearStatus(); }
     }
 
     function showSettingsModal() {
@@ -1136,7 +1152,7 @@
                 fullConversation = []; currentStartIndex = 0; lastSummaryIndex = 0;
                 currentHeart = { heart: "", scene: "", emotion: "", thought: "" };
                 heartHistory = []; lastChain = "";
-                saveToLocal(); renderChat(); setStatus('已清空');
+                saveToLocal(); renderChat(); clearStatus();
                 modal.remove();
             }
         };
@@ -1167,7 +1183,7 @@
             contextLimit = parseInt(document.getElementById('setContextLimit').value) || 150;
             summaryPromptTemplate = document.getElementById('setSummaryPrompt').value;
             saveToLocal();
-            setStatus('设置已保存');
+            clearStatus();
             modal.remove();
         };
         document.getElementById('saveCloseBtn').onclick = saveClose;
@@ -1189,7 +1205,7 @@
         a.download = 'fangbai_backup.json';
         a.click();
         URL.revokeObjectURL(a.href);
-        setStatus('已下载到下载文件夹');
+        clearStatus();
     }
     function importData(file) {
         if (!file) return;
@@ -1214,8 +1230,8 @@
                 else longTermEntries = [];
                 visibleLimit = d.visibleLimit || 30; contextLimit = d.contextLimit || 150;
                 summaryThreshold = d.summaryThreshold || 200; summaryPromptTemplate = d.summaryPromptTemplate || "";
-                saveToLocal(); renderChat(); setStatus('导入成功');
-            } catch(e) { setStatus('导入失败', true); }
+                saveToLocal(); renderChat(); clearStatus();
+            } catch(e) { setStatus('导入失败', true); clearStatus(); }
         };
         reader.readAsText(file, 'UTF-8');
     }

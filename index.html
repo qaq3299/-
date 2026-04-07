@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>幸芳白 · 幸小混版</title>
+    <title>幸芳白 · 浅色版</title>
     <style>
         * {
             box-sizing: border-box;
@@ -12,7 +12,7 @@
         body {
             margin: 0;
             padding: 0;
-            background: #000;
+            background: #F2F2F7;
             height: 100%;
             min-height: -webkit-fill-available;
             overflow: hidden;
@@ -25,17 +25,18 @@
             display: flex;
             flex-direction: column;
             height: 100%;
-            background: #0E0E0E;
+            background: #FFFFFF;
             overflow: hidden;
         }
+        /* 顶栏 */
         .toolbar {
-            background: #1C1C1E;
+            background: #FFFFFF;
             padding: 8px 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-shrink: 0;
-            border-bottom: 0.5px solid #2C2C2E;
+            border-bottom: 0.5px solid #C6C6C8;
         }
         .toolbar .left, .toolbar .right {
             display: flex;
@@ -47,34 +48,31 @@
             font-size: 24px;
             padding: 8px;
             margin: 0;
-            color: #00D26A;
+            color: #007AFF;
             min-width: 44px;
             min-height: 44px;
             cursor: pointer;
         }
-        .toolbar button:active { opacity: 0.6; }
         .toolbar .title {
             font-weight: 600;
             font-size: 17px;
-            color: #FFFFFF;
+            color: #000000;
             cursor: pointer;
             padding: 8px;
             border-radius: 20px;
         }
-        .toolbar .title:active { background: #2C2C2E; }
         .chain-panel {
-            background: #1C1C1E;
-            border-bottom: 0.5px solid #2C2C2E;
+            background: #F9F9F9;
+            border-bottom: 0.5px solid #C6C6C8;
             padding: 12px;
             display: none;
             flex-direction: column;
             gap: 8px;
             font-size: 13px;
-            color: #CCCCCC;
+            color: #3A3A3C;
         }
         .chain-panel.open { display: flex; }
-        .chain-label { font-weight: 600; color: #00D26A; margin-bottom: 4px; }
-        .chain-content { white-space: pre-wrap; word-break: break-word; }
+        .chain-label { font-weight: 600; color: #007AFF; margin-bottom: 4px; }
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -83,30 +81,42 @@
             flex-direction: column;
             gap: 8px;
         }
+        /* 消息行：flex 布局，头像在两端 */
         .message-row {
             display: flex;
-            gap: 8px;
             align-items: flex-start;
+            gap: 8px;
         }
-        .user-row { justify-content: flex-end; }
-        .assistant-row { justify-content: flex-start; }
+        .user-row {
+            justify-content: flex-end;
+        }
+        .assistant-row {
+            justify-content: flex-start;
+        }
+        /* 头像容器 */
         .avatar {
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: #2C2C2E;
+            background: #E5E5EA;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 18px;
             font-weight: 500;
-            color: #FFF;
+            color: #000;
             flex-shrink: 0;
             overflow: hidden;
-            cursor: pointer;
         }
-        .avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .avatar-placeholder { visibility: hidden; }
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .avatar-placeholder {
+            visibility: hidden;
+        }
+        /* 气泡 */
         .message-bubble {
             max-width: 75%;
             padding: 10px 14px;
@@ -116,34 +126,39 @@
             font-size: 15px;
         }
         .user-row .message-bubble {
-            background: #00D26A;
-            color: #000;
+            background: #007AFF;
+            color: #FFFFFF;
             border-bottom-right-radius: 4px;
         }
         .assistant-row .message-bubble {
-            background: #2C2C2E;
-            color: #FFF;
+            background: #E5E5EA;
+            color: #000000;
             border-bottom-left-radius: 4px;
         }
         .timestamp {
-            font-size: 10px;
-            color: rgba(255,255,255,0.5);
+            font-size: 11px;
+            color: #8E8E93;
             margin-top: 4px;
             text-align: right;
         }
-        .user-row .timestamp { color: rgba(0,0,0,0.5); }
-        .message-content { white-space: pre-wrap; }
+        .assistant-row .timestamp {
+            text-align: left;
+        }
+        .message-content {
+            white-space: pre-wrap;
+        }
         .image-preview {
             max-width: 200px;
             max-height: 150px;
             margin-bottom: 6px;
             border-radius: 12px;
         }
+        /* 输入区 */
         .input-area {
             display: flex;
             padding: 10px 12px;
-            background: #1C1C1E;
-            border-top: 0.5px solid #2C2C2E;
+            background: #FFFFFF;
+            border-top: 0.5px solid #C6C6C8;
             gap: 8px;
             align-items: flex-end;
             flex-shrink: 0;
@@ -155,9 +170,9 @@
             font-size: 16px;
             padding: 10px 14px;
             max-height: 100px;
-            background: #0C0C0D;
-            color: #FFF;
-            border: 0.5px solid #3A3A3C;
+            background: #F2F2F7;
+            color: #000;
+            border: 0.5px solid #C6C6C8;
             font-family: inherit;
             resize: none;
         }
@@ -174,98 +189,98 @@
             border-radius: 30px;
             transition: 0.2s;
         }
-        .input-buttons button:active { opacity: 0.6; }
-        #triggerBtn { background: #00D26A; color: #000; }
-        #appendBtn { background: #3A3A3C; color: #FFF; }
-        #plusBtn { background: #3A3A3C; color: #FFF; font-size: 28px; padding: 8px 12px; border-radius: 30px; }
+        #triggerBtn { background: #007AFF; color: #FFF; }
+        #appendBtn { background: #E5E5EA; color: #007AFF; }
+        #plusBtn { background: #E5E5EA; color: #007AFF; font-size: 28px; padding: 8px 12px; border-radius: 30px; }
         .plus-menu {
             position: fixed;
             bottom: 80px;
             left: 20px;
-            background: #2C2C2E;
+            background: #FFFFFF;
             border-radius: 30px;
             display: flex;
             gap: 12px;
             padding: 10px 16px;
             z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         .plus-menu button {
             background: none;
             border: none;
             font-size: 28px;
             padding: 8px;
-            color: #FFF;
             cursor: pointer;
         }
         .status {
             padding: 6px 12px;
             font-size: 11px;
             color: #8E8E93;
-            background: #1C1C1E;
+            background: #F2F2F7;
             text-align: center;
             flex-shrink: 0;
         }
+        /* 模态框 */
         .modal, .fullscreen-modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.4);
             z-index: 2000;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         .modal-card {
-            background: #1C1C1E;
+            background: #FFFFFF;
             border-radius: 28px;
             width: 85%;
             max-width: 340px;
             max-height: 80%;
             overflow-y: auto;
             padding: 20px;
-            color: #FFF;
+            color: #000;
         }
         .fullscreen-modal {
-            background: #0E0E0E;
+            background: #F2F2F7;
             flex-direction: column;
             justify-content: flex-start;
         }
         .fullscreen-header {
             width: 100%;
             padding: 12px 16px;
-            background: #1C1C1E;
+            background: #FFFFFF;
             display: flex;
             align-items: center;
-            border-bottom: 0.5px solid #2C2C2E;
+            border-bottom: 0.5px solid #C6C6C8;
         }
-        .fullscreen-header button { background: none; border: none; font-size: 24px; color: #00D26A; padding: 8px; }
-        .fullscreen-header .title { flex: 1; text-align: center; font-weight: 600; color: #FFF; }
+        .fullscreen-header button { background: none; border: none; font-size: 24px; color: #007AFF; padding: 8px; }
+        .fullscreen-header .title { flex: 1; text-align: center; font-weight: 600; color: #000; }
         .fullscreen-content { padding: 16px; width: 100%; overflow-y: auto; }
-        .section { margin-bottom: 24px; border-bottom: 1px solid #2C2C2E; padding-bottom: 16px; }
-        .section-title { font-weight: 600; margin-bottom: 12px; font-size: 16px; color: #FFF; cursor: pointer; user-select: none; }
+        .section { margin-bottom: 24px; border-bottom: 1px solid #C6C6C8; padding-bottom: 16px; }
+        .section-title { font-weight: 600; margin-bottom: 12px; font-size: 16px; color: #000; cursor: pointer; user-select: none; }
         .section-collapsible { display: block; }
         .section-collapsible.collapsed { display: none; }
-        .worldbook-entry {
-            background: #0C0C0D;
+        /* 世界书/长期记忆条目 */
+        .memory-entry {
+            background: #FFFFFF;
             border-radius: 12px;
             padding: 10px;
             margin-bottom: 10px;
-            border: 0.5px solid #3A3A3C;
+            border: 0.5px solid #C6C6C8;
         }
-        .worldbook-header {
+        .memory-header {
             display: flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 8px;
         }
-        .worldbook-header input {
+        .memory-header input {
             flex: 2;
             margin: 0;
         }
-        .worldbook-header button {
+        .memory-header button {
             background: none;
             border: none;
             font-size: 20px;
@@ -273,13 +288,13 @@
             cursor: pointer;
             color: #8E8E93;
         }
-        .worldbook-content textarea {
+        .memory-content textarea {
             width: 100%;
             min-height: 60px;
         }
         .add-entry-btn {
-            background: #00D26A;
-            color: #000;
+            background: #007AFF;
+            color: #FFF;
             border: none;
             padding: 8px 12px;
             border-radius: 20px;
@@ -290,10 +305,10 @@
         textarea, input, select {
             width: 100%;
             padding: 10px;
-            border: 0.5px solid #3A3A3C;
+            border: 0.5px solid #C6C6C8;
             border-radius: 12px;
-            background: #0C0C0D;
-            color: #FFF;
+            background: #FFFFFF;
+            color: #000;
             font-family: inherit;
         }
         .flex-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; align-items: center; }
@@ -301,23 +316,39 @@
         button.danger { background: #FF3B30; color: #FFF; }
         .data-actions { display: flex; gap: 12px; margin-top: 8px; }
         .data-actions button { flex: 1; }
+        /* 弹出菜单（横排，自动边界） */
         .context-menu {
             position: fixed;
-            background: #2C2C2E;
+            background: #FFFFFF;
             border-radius: 30px;
             display: flex;
             gap: 4px;
             padding: 6px 12px;
             z-index: 3000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border: 0.5px solid #C6C6C8;
         }
         .context-menu button {
             background: none;
             border: none;
             font-size: 24px;
             padding: 8px;
-            color: #FFF;
             cursor: pointer;
+            color: #007AFF;
+        }
+        /* 按钮居中 */
+        .center-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .center-buttons button {
+            width: 80%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 30px;
         }
     </style>
 </head>
@@ -359,28 +390,30 @@
     const statusSpan = document.getElementById('statusMsg');
 
     // 数据
-    let fullConversation = [];      // {role, content, timestamp, image?}
+    let fullConversation = [];
     let systemPrompt = '';
     let currentStartIndex = 0;
     let lastSummaryIndex = 0;
     let currentHeart = { heart: "", scene: "", emotion: "", thought: "" };
-    let heartHistory = [];          // {heart, timestamp}
+    let heartHistory = [];
     let lastChain = "";
     let userAvatarBase64 = "";
     let aiAvatarBase64 = "";
 
-    // 世界书条目数组
-    let worldBookEntries = [];      // [{name, content}]
+    // 世界书条目
+    let worldBookEntries = [];
+    // 长期记忆条目
+    let longTermEntries = [];
 
     // 配置
-    let apiUrl = "", modelName = "gemini-2.5-pro", apiKey = "", authType = "bearer", customHeaderName = "";
-    let userSetting = "", fullPersona = "", coreRules = "", longTermMemory = "";
+    let apiUrl = "", modelName = "gemini-2.5-pro", apiKey = "", authType = "bearer";
+    let userSetting = "", fullPersona = "";
     let visibleLimit = 30, contextLimit = 150, summaryThreshold = 200, summaryPromptTemplate = "";
 
     // 辅助函数
     function setStatus(msg, isError = false) {
         statusSpan.innerText = msg;
-        statusSpan.style.color = isError ? "#FF3B30" : "#00D26A";
+        statusSpan.style.color = isError ? "#FF3B30" : "#007AFF";
         setTimeout(() => { if (statusSpan.innerText === msg) statusSpan.innerText = ""; }, 3000);
     }
 
@@ -389,15 +422,15 @@
             fullConversation, currentStartIndex, lastSummaryIndex,
             currentHeart, heartHistory, lastChain,
             userAvatarBase64, aiAvatarBase64,
-            apiUrl, modelName, apiKey, authType, customHeaderName,
-            userSetting, fullPersona, coreRules, worldBookEntries, longTermMemory,
+            apiUrl, modelName, apiKey, authType,
+            userSetting, fullPersona, worldBookEntries, longTermEntries,
             visibleLimit, contextLimit, summaryThreshold, summaryPromptTemplate
         };
-        localStorage.setItem('fangbai_modern', JSON.stringify(data));
+        localStorage.setItem('fangbai_light', JSON.stringify(data));
     }
 
     function loadFromLocal() {
-        const raw = localStorage.getItem('fangbai_modern');
+        const raw = localStorage.getItem('fangbai_light');
         if (!raw) return;
         try {
             const d = JSON.parse(raw);
@@ -410,17 +443,14 @@
             userAvatarBase64 = d.userAvatarBase64 || "";
             aiAvatarBase64 = d.aiAvatarBase64 || "";
             apiUrl = d.apiUrl || ""; modelName = d.modelName || "gemini-2.5-pro"; apiKey = d.apiKey || "";
-            authType = d.authType || "bearer"; customHeaderName = d.customHeaderName || "";
-            userSetting = d.userSetting || ""; fullPersona = d.fullPersona || ""; coreRules = d.coreRules || "";
-            // 兼容旧格式：如果 d.worldBook 是字符串，转换为默认条目
-            if (d.worldBook !== undefined && typeof d.worldBook === 'string') {
-                worldBookEntries = [{ name: "默认", content: d.worldBook }];
-            } else if (d.worldBookEntries && Array.isArray(d.worldBookEntries)) {
-                worldBookEntries = d.worldBookEntries;
-            } else {
-                worldBookEntries = [];
-            }
-            longTermMemory = d.longTermMemory || "";
+            authType = d.authType || "bearer";
+            userSetting = d.userSetting || ""; fullPersona = d.fullPersona || "";
+            if (d.worldBookEntries) worldBookEntries = d.worldBookEntries;
+            else if (d.worldBook) worldBookEntries = [{ name: "默认", content: d.worldBook }];
+            else worldBookEntries = [];
+            if (d.longTermEntries) longTermEntries = d.longTermEntries;
+            else if (d.longTermMemory) longTermEntries = [{ title: "长期记忆", content: d.longTermMemory }];
+            else longTermEntries = [];
             visibleLimit = d.visibleLimit || 30; contextLimit = d.contextLimit || 150;
             summaryThreshold = d.summaryThreshold || 200; summaryPromptTemplate = d.summaryPromptTemplate || "";
             renderChat();
@@ -432,21 +462,15 @@
         let parts = [];
         if (userSetting.trim()) parts.push(userSetting);
         if (fullPersona.trim()) parts.push(fullPersona);
-        if (coreRules.trim()) parts.push(coreRules);
-        // 世界书：将条目拼接
         if (worldBookEntries.length > 0) {
             let worldText = worldBookEntries.map(entry => `【${entry.name}】\n${entry.content}`).join('\n\n');
             parts.push(worldText);
         }
-        if (longTermMemory.trim()) parts.push(longTermMemory);
-        // 写作规则
-        parts.push(`写作规则：
-1. POV limit (character only): Describe only the character's actions, expressions, dialogue, thoughts, tone. Do not describe what the user does or thinks. Only react to the user's presence or words.
-2. Write what happens, not what doesn't: Avoid describing what the character does not do. Directly state what they actually do, say, or think. Example: write "他沉默地移开视线" instead of "他没有生气，也没有说话".
-3. No user content filling: Never speak/act/guess for the user. Do not describe the user's tone or unstated intent.
-4. No user tone description: Do not write things like "She hears anger in his voice" or "He sees her hesitate."
-5. Avoid similes: No "像", "仿佛", "如同". Use direct, concrete description. Example: write "他的呼吸变得急促，手在发抖" not "他的怒火像火山一样喷发".`);
-        // 心声JSON要求
+        if (longTermEntries.length > 0) {
+            let longText = longTermEntries.map(entry => `【${entry.title}】\n${entry.content}`).join('\n\n');
+            parts.push(longText);
+        }
+        // 心声JSON要求（不要写作规则）
         parts.push(`【重要】每次回复末尾必须输出以下JSON对象（单独一行）：
 {"heart": "心声（一句话，精准短小）","scene": "画面（第三人称，文学感）","emotion": "情绪（第一人称短句）","thought": "想法（详细长篇）","chain": "思维链概括（30-50字）"}
 请确保该JSON之前有一个空行。正常回复内容中不要包含此JSON。`);
@@ -455,6 +479,7 @@
     }
 
     function parseAIResponse(raw) {
+        // 提取 JSON 块
         let jsonMatch = raw.match(/\n?\s*\{[^{]*"heart"[^}]*\}/);
         let jsonObj = null;
         let cleanText = raw;
@@ -480,6 +505,8 @@
             }
             saveToLocal();
         }
+        // 移除可能残留的 <br> 标签
+        cleanText = cleanText.replace(/<br\s*\/?>/gi, '\n');
         return cleanText;
     }
 
@@ -502,29 +529,30 @@
         for (let i = 0; i < toShow.length; i++) {
             const msg = toShow[i];
             const isUser = msg.role === 'user';
-            const isLastOfSame = (i === toShow.length-1) || (toShow[i+1].role !== msg.role);
             const showAvatar = (i === 0) || (toShow[i-1].role !== msg.role);
             const avatarUrl = isUser ? userAvatarBase64 : aiAvatarBase64;
             const avatarText = isUser ? '你' : '白';
             const rowDiv = document.createElement('div');
             rowDiv.className = `message-row ${isUser ? 'user-row' : 'assistant-row'}`;
-            const avatarDiv = document.createElement('div');
-            avatarDiv.className = `avatar ${!showAvatar ? 'avatar-placeholder' : ''}`;
-            if (showAvatar) {
-                if (avatarUrl) {
-                    const img = document.createElement('img');
-                    img.src = avatarUrl;
-                    avatarDiv.appendChild(img);
-                } else {
-                    avatarDiv.innerText = avatarText;
-                }
-                if (!isUser) {
+            // 头像：用户消息在右边，AI消息在左边
+            if (!isUser) {
+                const avatarDiv = document.createElement('div');
+                avatarDiv.className = `avatar ${!showAvatar ? 'avatar-placeholder' : ''}`;
+                if (showAvatar) {
+                    if (avatarUrl) {
+                        const img = document.createElement('img');
+                        img.src = avatarUrl;
+                        avatarDiv.appendChild(img);
+                    } else {
+                        avatarDiv.innerText = avatarText;
+                    }
                     avatarDiv.style.cursor = 'pointer';
                     avatarDiv.addEventListener('click', (e) => {
                         e.stopPropagation();
                         showHeartModal();
                     });
                 }
+                rowDiv.appendChild(avatarDiv);
             }
             const bubbleDiv = document.createElement('div');
             bubbleDiv.className = 'message-bubble';
@@ -538,18 +566,34 @@
             contentDiv.className = 'message-content';
             contentDiv.innerText = msg.content || '';
             bubbleDiv.appendChild(contentDiv);
-            if (isLastOfSame && msg.timestamp) {
-                const timeSpan = document.createElement('div');
-                timeSpan.className = 'timestamp';
-                timeSpan.innerText = msg.timestamp;
-                bubbleDiv.appendChild(timeSpan);
-            }
-            rowDiv.appendChild(avatarDiv);
             rowDiv.appendChild(bubbleDiv);
-            rowDiv.addEventListener('contextmenu', (e) => { e.preventDefault(); showContextMenu(e, msg, i + currentStartIndex); });
-            let timer = null;
-            rowDiv.addEventListener('touchstart', (e) => { timer = setTimeout(() => { showContextMenu(e, msg, i + currentStartIndex); }, 500); });
-            rowDiv.addEventListener('touchend', () => { clearTimeout(timer); });
+            if (isUser) {
+                const avatarDiv = document.createElement('div');
+                avatarDiv.className = `avatar ${!showAvatar ? 'avatar-placeholder' : ''}`;
+                if (showAvatar) {
+                    if (avatarUrl) {
+                        const img = document.createElement('img');
+                        img.src = avatarUrl;
+                        avatarDiv.appendChild(img);
+                    } else {
+                        avatarDiv.innerText = avatarText;
+                    }
+                    // 用户头像无点击事件
+                }
+                rowDiv.appendChild(avatarDiv);
+            }
+            // 时间戳放在气泡外部下方
+            const timestampDiv = document.createElement('div');
+            timestampDiv.className = 'timestamp';
+            timestampDiv.innerText = msg.timestamp || '';
+            // 将时间戳插入到消息行末尾（气泡下方）
+            rowDiv.appendChild(timestampDiv);
+            // 点击消息弹出菜单（短按）
+            rowDiv.addEventListener('click', (e) => {
+                // 防止点到内部按钮冒泡
+                if (e.target.tagName === 'BUTTON') return;
+                showContextMenu(e, msg, i + currentStartIndex);
+            });
             chatMessagesDiv.appendChild(rowDiv);
         }
         chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
@@ -557,6 +601,7 @@
 
     function showContextMenu(e, msg, idx) {
         e.preventDefault();
+        e.stopPropagation();
         const oldMenu = document.querySelector('.context-menu');
         if (oldMenu) oldMenu.remove();
         const menu = document.createElement('div');
@@ -594,11 +639,24 @@
         menu.appendChild(delBtn);
         menu.appendChild(copyBtn);
         document.body.appendChild(menu);
+        // 获取点击位置
         let x = e.clientX, y = e.clientY;
         if (e.touches) { x = e.touches[0].clientX; y = e.touches[0].clientY; }
-        menu.style.left = x + 'px';
-        menu.style.top = y + 'px';
-        setTimeout(() => { document.addEventListener('click', function rm() { menu.remove(); document.removeEventListener('click', rm); }); }, 100);
+        // 自动调整边界，防止超出屏幕
+        const menuRect = menu.getBoundingClientRect();
+        let left = x;
+        let top = y + 10;
+        if (left + menuRect.width > window.innerWidth) left = window.innerWidth - menuRect.width - 10;
+        if (left < 10) left = 10;
+        if (top + menuRect.height > window.innerHeight) top = window.innerHeight - menuRect.height - 10;
+        if (top < 10) top = 10;
+        menu.style.left = left + 'px';
+        menu.style.top = top + 'px';
+        setTimeout(() => {
+            document.addEventListener('click', function rm(e) {
+                if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click', rm); }
+            });
+        }, 100);
     }
 
     function showHeartModal() {
@@ -608,11 +666,11 @@
         card.className = 'modal-card';
         card.innerHTML = `
             <h3>💭 幸芳白·心声 <span class="close">&times;</span></h3>
-            <div class="heart-item"><div class="heart-label">💖 心声</div><div class="heart-text">${escapeHtml(currentHeart.heart || '暂无')}</div></div>
-            <div class="heart-item"><div class="heart-label">🎬 画面</div><div class="heart-text">${escapeHtml(currentHeart.scene || '暂无')}</div></div>
-            <div class="heart-item"><div class="heart-label">😊 情绪</div><div class="heart-text">${escapeHtml(currentHeart.emotion || '暂无')}</div></div>
-            <div class="heart-item"><div class="heart-label">💭 想法</div><div class="heart-text">${escapeHtml(currentHeart.thought || '暂无')}</div></div>
-            <button class="history-btn" id="historyHeartBtn">📜 历史心声</button>
+            <div><strong>💖 心声</strong><br>${escapeHtml(currentHeart.heart || '暂无')}</div>
+            <div style="margin-top:12px"><strong>🎬 画面</strong><br>${escapeHtml(currentHeart.scene || '暂无')}</div>
+            <div style="margin-top:12px"><strong>😊 情绪</strong><br>${escapeHtml(currentHeart.emotion || '暂无')}</div>
+            <div style="margin-top:12px"><strong>💭 想法</strong><br>${escapeHtml(currentHeart.thought || '暂无')}</div>
+            <button class="history-btn" id="historyHeartBtn" style="margin-top:16px">📜 历史心声</button>
         `;
         modalDiv.appendChild(card);
         document.body.appendChild(modalDiv);
@@ -622,7 +680,7 @@
             historyModal.className = 'modal';
             const historyCard = document.createElement('div');
             historyCard.className = 'modal-card';
-            historyCard.innerHTML = `<h3>📜 历史心声 <span class="close">&times;</span></h3><div class="history-list" id="historyList"></div>`;
+            historyCard.innerHTML = `<h3>📜 历史心声 <span class="close">&times;</span></h3><div id="historyList"></div>`;
             historyModal.appendChild(historyCard);
             document.body.appendChild(historyModal);
             const listDiv = historyCard.querySelector('#historyList');
@@ -630,8 +688,8 @@
             else {
                 heartHistory.forEach(h => {
                     const entry = document.createElement('div');
-                    entry.className = 'history-entry';
-                    entry.innerHTML = `<div class="history-time">${escapeHtml(h.timestamp)}</div><div>${escapeHtml(h.heart)}</div>`;
+                    entry.style.marginBottom = '12px';
+                    entry.innerHTML = `<div style="font-size:11px; color:#8E8E93">${escapeHtml(h.timestamp)}</div><div>${escapeHtml(h.heart)}</div>`;
                     listDiv.appendChild(entry);
                 });
             }
@@ -687,7 +745,6 @@
         let headers = { 'Content-Type': 'application/json' };
         if (authType === 'bearer') headers['Authorization'] = `Bearer ${apiKey}`;
         else if (authType === 'direct') headers['Authorization'] = apiKey;
-        else if (authType === 'custom') headers[customHeaderName || 'x-api-key'] = apiKey;
         const body = { model: modelName, messages: apiMessages, temperature: 0.8, max_tokens: 1000 };
         setStatus('AI思考中...');
         try {
@@ -696,6 +753,7 @@
             const data = await resp.json();
             let reply = data.choices[0].message.content;
             const cleanReply = parseAIResponse(reply);
+            // 按换行拆分成多个气泡
             const lines = cleanReply.split(/\r?\n/).filter(l => l.trim().length > 0);
             for (let line of lines) {
                 fullConversation.push({ role: 'assistant', content: line, timestamp: new Date().toLocaleTimeString() });
@@ -737,7 +795,6 @@
         let headers = { 'Content-Type': 'application/json' };
         if (authType === 'bearer') headers['Authorization'] = `Bearer ${apiKey}`;
         else if (authType === 'direct') headers['Authorization'] = apiKey;
-        else if (authType === 'custom') headers[customHeaderName || 'x-api-key'] = apiKey;
         const body = { model: modelName, messages: apiMessages, temperature: 0.8, max_tokens: 1000 };
         setStatus('重新生成中...');
         try {
@@ -774,28 +831,90 @@
         input.click();
     }
 
+    // 长期记忆UI动态渲染
+    function renderLongTermUI(container) {
+        container.innerHTML = '';
+        longTermEntries.forEach((entry, idx) => {
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'memory-entry';
+            entryDiv.innerHTML = `
+                <div class="memory-header">
+                    <input type="text" placeholder="标题" value="${escapeHtml(entry.title)}" data-title-idx="${idx}">
+                    <button class="move-up" data-idx="${idx}" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>▲</button>
+                    <button class="move-down" data-idx="${idx}" ${idx === longTermEntries.length-1 ? 'disabled style="opacity:0.3"' : ''}>▼</button>
+                    <button class="delete-entry" data-idx="${idx}">🗑️</button>
+                </div>
+                <div class="memory-content">
+                    <textarea rows="3" placeholder="内容" data-content-idx="${idx}">${escapeHtml(entry.content)}</textarea>
+                </div>
+            `;
+            container.appendChild(entryDiv);
+        });
+        container.querySelectorAll('.move-up').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.idx);
+                if (idx > 0) {
+                    [longTermEntries[idx-1], longTermEntries[idx]] = [longTermEntries[idx], longTermEntries[idx-1]];
+                    saveToLocal();
+                    renderLongTermUI(container);
+                }
+            });
+        });
+        container.querySelectorAll('.move-down').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.idx);
+                if (idx < longTermEntries.length-1) {
+                    [longTermEntries[idx+1], longTermEntries[idx]] = [longTermEntries[idx], longTermEntries[idx+1]];
+                    saveToLocal();
+                    renderLongTermUI(container);
+                }
+            });
+        });
+        container.querySelectorAll('.delete-entry').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.idx);
+                longTermEntries.splice(idx, 1);
+                saveToLocal();
+                renderLongTermUI(container);
+            });
+        });
+        container.querySelectorAll('input[data-title-idx]').forEach(inp => {
+            inp.addEventListener('change', (e) => {
+                const idx = parseInt(inp.dataset.titleIdx);
+                longTermEntries[idx].title = inp.value;
+                saveToLocal();
+            });
+        });
+        container.querySelectorAll('textarea[data-content-idx]').forEach(ta => {
+            ta.addEventListener('change', (e) => {
+                const idx = parseInt(ta.dataset.contentIdx);
+                longTermEntries[idx].content = ta.value;
+                saveToLocal();
+            });
+        });
+    }
+
     // 世界书UI动态渲染
     function renderWorldBookUI(container) {
         container.innerHTML = '';
         worldBookEntries.forEach((entry, idx) => {
             const entryDiv = document.createElement('div');
-            entryDiv.className = 'worldbook-entry';
+            entryDiv.className = 'memory-entry';
             entryDiv.innerHTML = `
-                <div class="worldbook-header">
+                <div class="memory-header">
                     <input type="text" placeholder="条目名称" value="${escapeHtml(entry.name)}" data-name-idx="${idx}">
                     <button class="move-up" data-idx="${idx}" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>▲</button>
                     <button class="move-down" data-idx="${idx}" ${idx === worldBookEntries.length-1 ? 'disabled style="opacity:0.3"' : ''}>▼</button>
                     <button class="delete-entry" data-idx="${idx}">🗑️</button>
                 </div>
-                <div class="worldbook-content">
-                    <textarea rows="2" placeholder="条目内容" data-content-idx="${idx}">${escapeHtml(entry.content)}</textarea>
+                <div class="memory-content">
+                    <textarea rows="3" placeholder="内容" data-content-idx="${idx}">${escapeHtml(entry.content)}</textarea>
                 </div>
             `;
             container.appendChild(entryDiv);
         });
-        // 绑定事件
         container.querySelectorAll('.move-up').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', () => {
                 const idx = parseInt(btn.dataset.idx);
                 if (idx > 0) {
                     [worldBookEntries[idx-1], worldBookEntries[idx]] = [worldBookEntries[idx], worldBookEntries[idx-1]];
@@ -805,7 +924,7 @@
             });
         });
         container.querySelectorAll('.move-down').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', () => {
                 const idx = parseInt(btn.dataset.idx);
                 if (idx < worldBookEntries.length-1) {
                     [worldBookEntries[idx+1], worldBookEntries[idx]] = [worldBookEntries[idx], worldBookEntries[idx+1]];
@@ -815,7 +934,7 @@
             });
         });
         container.querySelectorAll('.delete-entry').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', () => {
                 const idx = parseInt(btn.dataset.idx);
                 worldBookEntries.splice(idx, 1);
                 saveToLocal();
@@ -838,6 +957,46 @@
         });
     }
 
+    // 手动总结
+    async function manualSummarize() {
+        if (!apiUrl || !apiKey) { setStatus('请先配置API', true); return; }
+        const total = fullConversation.length;
+        if (lastSummaryIndex >= total) { setStatus('没有新消息需要总结', false); return; }
+        const newMessages = fullConversation.slice(lastSummaryIndex);
+        const newCount = newMessages.length;
+        const threshold = summaryThreshold;
+        if (newCount > threshold) {
+            if (!confirm(`共有 ${newCount} 条新消息，超过阈值 ${threshold} 条。是否继续总结？`)) return;
+        }
+        const conversationText = newMessages.map(m => `${m.role === 'user' ? '用户' : '幸芳白'}：${m.content}`).join('\n');
+        let prompt = summaryPromptTemplate.trim();
+        if (!prompt) prompt = "请总结以下对话的关键剧情、关系变化、情绪节点和重要事件。用第三人称简洁描述。\n\n对话内容：\n{{conversation}}";
+        const finalPrompt = prompt.replace(/{{conversation}}/g, conversationText);
+        let headers = { 'Content-Type': 'application/json' };
+        if (authType === 'bearer') headers['Authorization'] = `Bearer ${apiKey}`;
+        else if (authType === 'direct') headers['Authorization'] = apiKey;
+        const body = { model: modelName, messages: [{ role: 'user', content: finalPrompt }], temperature: 0.5, max_tokens: 800 };
+        setStatus('正在总结...');
+        try {
+            const resp = await fetch(apiUrl + '/chat/completions', { method: 'POST', headers, body: JSON.stringify(body) });
+            if (!resp.ok) throw new Error(await resp.text());
+            const data = await resp.json();
+            let summary = data.choices[0].message.content;
+            if (!summary) throw new Error('总结为空');
+            const timestamp = new Date().toLocaleString();
+            longTermEntries.push({ title: `总结 ${timestamp}`, content: summary });
+            lastSummaryIndex = total;
+            saveToLocal();
+            setStatus('总结已添加到长期记忆');
+            // 刷新设置界面（如果打开）
+            const settingsModal = document.querySelector('.fullscreen-modal');
+            if (settingsModal) {
+                const container = settingsModal.querySelector('#longTermContainer');
+                if (container) renderLongTermUI(container);
+            }
+        } catch(err) { setStatus('总结失败: '+err.message, true); }
+    }
+
     function showSettingsModal() {
         const modal = document.createElement('div');
         modal.className = 'fullscreen-modal';
@@ -848,43 +1007,53 @@
                     <input id="setApiUrl" placeholder="API地址" value="${escapeHtml(apiUrl)}">
                     <input id="setModel" placeholder="模型名" value="${escapeHtml(modelName)}">
                     <input id="setApiKey" type="password" placeholder="API Key" value="${escapeHtml(apiKey)}">
-                    <select id="setAuthType"><option value="bearer">Bearer</option><option value="direct">直接Key</option><option value="custom">自定义Header</option></select>
-                    <input id="setCustomHeader" placeholder="自定义Header名" value="${escapeHtml(customHeaderName)}">
+                    <select id="setAuthType"><option value="bearer">Bearer</option><option value="direct">直接Key</option></select>
                 </div>
                 <div class="section"><div class="section-title">📝 设定</div>
                     <textarea id="setUserSetting" placeholder="用户设定">${escapeHtml(userSetting)}</textarea>
-                    <textarea id="setFullPersona" placeholder="完整人设">${escapeHtml(fullPersona)}</textarea>
-                    <textarea id="setCoreRules" placeholder="精简指令">${escapeHtml(coreRules)}</textarea>
+                    <textarea id="setFullPersona" placeholder="角色设定">${escapeHtml(fullPersona)}</textarea>
                     <div class="section-title" id="worldbookToggle">🌍 世界书 (点击展开/收起)</div>
                     <div id="worldbookContainer" class="section-collapsible collapsed" style="margin-bottom: 16px;"></div>
                     <button id="addWorldEntry" class="add-entry-btn">+ 添加条目</button>
-                    <textarea id="setLongTermMemory" placeholder="长期记忆">${escapeHtml(longTermMemory)}</textarea>
+                    <div class="section-title" id="longtermToggle">🧠 长期记忆 (点击展开/收起)</div>
+                    <div id="longTermContainer" class="section-collapsible collapsed" style="margin-bottom: 16px;"></div>
+                    <button id="addLongEntry" class="add-entry-btn">+ 添加记忆块</button>
+                    <button id="manualSummaryBtn" class="add-entry-btn" style="background:#007AFF; margin-top:8px;">📝 手动总结新内容</button>
+                    <div class="section-title" style="margin-top:16px;">📝 总结提示词</div>
+                    <textarea id="setSummaryPrompt" rows="2" placeholder="自定义总结提示词，使用 {{conversation}} 占位">${escapeHtml(summaryPromptTemplate)}</textarea>
                 </div>
                 <div class="section"><div class="section-title">⚙️ 对话设置</div>
                     <div class="flex-row"><span>UI显示最近:</span><input type="number" id="setVisibleLimit" value="${visibleLimit}"></div>
                     <div class="flex-row"><span>AI上下文:</span><input type="number" id="setContextLimit" value="${contextLimit}"></div>
                 </div>
-                <div class="section"><div class="section-title">🖼️ 头像</div>
-                    <div>用户头像: <input type="file" id="userAvatarFile" accept="image/*"></div>
-                    <div>幸芳白头像: <input type="file" id="aiAvatarFile" accept="image/*"></div>
+                <div class="section"><div class="section-title">🖼️ 头像设置</div>
+                    <div class="flex-row"><span>对方头像:</span><input type="file" id="aiAvatarFile" accept="image/*"></div>
+                    <div class="flex-row"><span>我方头像:</span><input type="file" id="userAvatarFile" accept="image/*"></div>
                 </div>
                 <div class="section"><div class="section-title">📦 数据</div>
                     <div class="data-actions"><button id="exportDataBtn">📤 导出</button><button id="importDataBtn">📥 导入</button><input type="file" id="importFile" style="display:none"></div>
-                    <button id="clearAllChatBtn" class="danger" style="margin-top:12px">🗑️ 清空全部对话</button>
+                </div>
+                <div class="center-buttons">
+                    <button id="saveCloseBtn" style="background:#007AFF; color:#FFF;">保存并关闭</button>
+                    <button id="clearAllChatBtn" class="danger">🗑️ 清空全部对话</button>
                 </div>
             </div>
         `;
         document.body.appendChild(modal);
         document.getElementById('closeSettings').onclick = () => modal.remove();
 
-        // 世界书折叠/展开
+        // 世界书折叠
         const worldbookToggle = document.getElementById('worldbookToggle');
         const worldbookContainer = document.getElementById('worldbookContainer');
         worldbookToggle.style.cursor = 'pointer';
-        worldbookToggle.onclick = () => {
-            worldbookContainer.classList.toggle('collapsed');
-        };
-        // 渲染世界书列表
+        worldbookToggle.onclick = () => worldbookContainer.classList.toggle('collapsed');
+        // 长期记忆折叠
+        const longtermToggle = document.getElementById('longtermToggle');
+        const longTermContainer = document.getElementById('longTermContainer');
+        longtermToggle.style.cursor = 'pointer';
+        longtermToggle.onclick = () => longTermContainer.classList.toggle('collapsed');
+
+        // 渲染世界书
         const worldbookDiv = document.getElementById('worldbookContainer');
         const renderWorld = () => renderWorldBookUI(worldbookDiv);
         renderWorld();
@@ -892,6 +1061,21 @@
             worldBookEntries.push({ name: "新条目", content: "" });
             saveToLocal();
             renderWorld();
+        };
+        // 渲染长期记忆
+        const longTermDiv = document.getElementById('longTermContainer');
+        const renderLong = () => renderLongTermUI(longTermDiv);
+        renderLong();
+        document.getElementById('addLongEntry').onclick = () => {
+            longTermEntries.push({ title: "新记忆块", content: "" });
+            saveToLocal();
+            renderLong();
+        };
+        document.getElementById('manualSummaryBtn').onclick = () => {
+            manualSummarize().then(() => {
+                renderLong();
+                setStatus('总结完成');
+            });
         };
 
         document.getElementById('exportDataBtn').onclick = () => exportData();
@@ -922,32 +1106,25 @@
                 reader.readAsDataURL(file);
             }
         };
-        const saveSettings = () => {
+        const saveClose = () => {
             apiUrl = document.getElementById('setApiUrl').value;
             modelName = document.getElementById('setModel').value;
             apiKey = document.getElementById('setApiKey').value;
             authType = document.getElementById('setAuthType').value;
-            customHeaderName = document.getElementById('setCustomHeader').value;
             userSetting = document.getElementById('setUserSetting').value;
             fullPersona = document.getElementById('setFullPersona').value;
-            coreRules = document.getElementById('setCoreRules').value;
-            longTermMemory = document.getElementById('setLongTermMemory').value;
             visibleLimit = parseInt(document.getElementById('setVisibleLimit').value) || 30;
             contextLimit = parseInt(document.getElementById('setContextLimit').value) || 150;
-            // 世界书已经在 renderWorld 中实时保存，无需额外操作
+            summaryPromptTemplate = document.getElementById('setSummaryPrompt').value;
             saveToLocal();
             setStatus('设置已保存');
             modal.remove();
         };
-        const saveBtn = document.createElement('button');
-        saveBtn.innerText = '保存并关闭';
-        saveBtn.style.marginTop = '20px';
-        saveBtn.onclick = saveSettings;
-        modal.querySelector('.fullscreen-content').appendChild(saveBtn);
+        document.getElementById('saveCloseBtn').onclick = saveClose;
     }
 
     async function exportData() {
-        const data = { fullConversation, currentHeart, heartHistory, lastChain, userAvatarBase64, aiAvatarBase64, apiUrl, modelName, apiKey, authType, customHeaderName, userSetting, fullPersona, coreRules, worldBookEntries, longTermMemory, visibleLimit, contextLimit, summaryThreshold, summaryPromptTemplate };
+        const data = { fullConversation, currentHeart, heartHistory, lastChain, userAvatarBase64, aiAvatarBase64, apiUrl, modelName, apiKey, authType, userSetting, fullPersona, worldBookEntries, longTermEntries, visibleLimit, contextLimit, summaryThreshold, summaryPromptTemplate };
         const jsonStr = JSON.stringify(data, null, 2);
         const blob = new Blob([jsonStr], {type: 'application/json'});
         if (navigator.share) {
@@ -977,13 +1154,16 @@
                 userAvatarBase64 = d.userAvatarBase64 || "";
                 aiAvatarBase64 = d.aiAvatarBase64 || "";
                 apiUrl = d.apiUrl || ""; modelName = d.modelName || "gemini-2.5-pro"; apiKey = d.apiKey || "";
-                authType = d.authType || "bearer"; customHeaderName = d.customHeaderName || "";
-                userSetting = d.userSetting || ""; fullPersona = d.fullPersona || ""; coreRules = d.coreRules || "";
+                authType = d.authType || "bearer";
+                userSetting = d.userSetting || ""; fullPersona = d.fullPersona || "";
                 if (d.worldBookEntries) worldBookEntries = d.worldBookEntries;
                 else if (d.worldBook) worldBookEntries = [{ name: "默认", content: d.worldBook }];
                 else worldBookEntries = [];
-                longTermMemory = d.longTermMemory || "";
+                if (d.longTermEntries) longTermEntries = d.longTermEntries;
+                else if (d.longTermMemory) longTermEntries = [{ title: "长期记忆", content: d.longTermMemory }];
+                else longTermEntries = [];
                 visibleLimit = d.visibleLimit || 30; contextLimit = d.contextLimit || 150;
+                summaryThreshold = d.summaryThreshold || 200; summaryPromptTemplate = d.summaryPromptTemplate || "";
                 saveToLocal(); renderChat(); setStatus('导入成功');
             } catch(e) { setStatus('导入失败', true); }
         };
@@ -1011,8 +1191,13 @@
         menu.style.left = rect.left + 'px';
         document.addEventListener('click', function rm(e) { if (!menu.contains(e.target) && e.target !== plusBtn) { menu.remove(); document.removeEventListener('click', rm); } });
     };
+    // 回车 = 追加（不触发）
     userInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); triggerAI(); }
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            appendUserMessage(userInput.value.trim());
+            userInput.value = '';
+        }
     });
 
     loadFromLocal();

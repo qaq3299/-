@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>幸芳白 · 幸小混版</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            height: 100%;
+            min-height: -webkit-fill-available;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+        }
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: #0E0E0E;
+            overflow: hidden;
+        }
+        .toolbar {
+            background: #1C1C1E;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            border-bottom: 0.5px solid #2C2C2E;
+        }
+        .toolbar .left, .toolbar .right {
+            display: flex;
+            gap: 16px;
+        }
+        .toolbar button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            padding: 8px;
+            margin: 0;
+            color: #00D26A;
+            min-width: 44px;
+            min-height: 44px;
+            cursor: pointer;
+        }
+        .toolbar button:active { opacity: 0.6; }
+        .toolbar .title {
+            font-weight: 600;
+            font-size: 17px;
+            color: #FFFFFF;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 20px;
+        }
+        .toolbar .title:active { background: #2C2C2E; }
+        .chain-panel {
+            background: #1C1C1E;
+            border-bottom: 0.5px solid #2C2C2E;
+            padding: 12px;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 13px;
+            color: #CCCCCC;
+        }
+        .chain-panel.open { display: flex; }
+        .chain-label { font-weight: 600; color: #00D26A; margin-bottom: 4px; }
+        .chain-content { white-space: pre-wrap; word-break: break-word; }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 12px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .message-row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+        .user-row { justify-content: flex-end; }
+        .assistant-row { justify-content: flex-start; }
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #2C2C2E;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 500;
+            color: #FFF;
+            flex-shrink: 0;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-placeholder { visibility: hidden; }
+        .message-bubble {
+            max-width: 75%;
+            padding: 10px 14px;
+            border-radius: 20px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            font-size: 15px;
+        }
+        .user-row .message-bubble {
+            background: #00D26A;
+            color: #000;
+            border-bottom-right-radius: 4px;
+        }
+        .assistant-row .message-bubble {
+            background: #2C2C2E;
+            color: #FFF;
+            border-bottom-left-radius: 4px;
+        }
+        .timestamp {
+            font-size: 10px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 4px;
+            text-align: right;
+        }
+        .user-row .timestamp { color: rgba(0,0,0,0.5); }
+        .message-content { white-space: pre-wrap; }
+        .image-preview {
+            max-width: 200px;
+            max-height: 150px;
+            margin-bottom: 6px;
+            border-radius: 12px;
+        }
+        .input-area {
+            display: flex;
+            padding: 10px 12px;
+            background: #1C1C1E;
+            border-top: 0.5px solid #2C2C2E;
+            gap: 8px;
+            align-items: flex-end;
+            flex-shrink: 0;
+        }
+        .input-area textarea {
+            flex: 1;
+            margin: 0;
+            border-radius: 20px;
+            font-size: 16px;
+            padding: 10px 14px;
+            max-height: 100px;
+            background: #0C0C0D;
+            color: #FFF;
+            border: 0.5px solid #3A3A3C;
+            font-family: inherit;
+            resize: none;
+        }
+        .input-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .input-buttons button {
+            background: none;
+            border: none;
+            font-size: 28px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: 0.2s;
+        }
+        .input-buttons button:active { opacity: 0.6; }
+        #triggerBtn { background: #00D26A; color: #000; }
+        #appendBtn { background: #3A3A3C; color: #FFF; }
+        #plusBtn { background: #3A3A3C; color: #FFF; font-size: 28px; padding: 8px 12px; border-radius: 30px; }
+        .plus-menu {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            background: #2C2C2E;
+            border-radius: 30px;
+            display: flex;
+            gap: 12px;
+            padding: 10px 16px;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .plus-menu button {
+            background: none;
+            border: none;
+            font-size: 28px;
+            padding: 8px;
+            color: #FFF;
+            cursor: pointer;
+        }
+        .status {
+            padding: 6px 12px;
+            font-size: 11px;
+            color: #8E8E93;
+            background: #1C1C1E;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .modal, .fullscreen-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-card {
+            background: #1C1C1E;
+            border-radius: 28px;
+            width: 85%;
+            max-width: 340px;
+            max-height: 80%;
+            overflow-y: auto;
+            padding: 20px;
+            color: #FFF;
+        }
+        .fullscreen-modal {
+            background: #0E0E0E;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .fullscreen-header {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1C1C1E;
+            display: flex;
+            align-items: center;
+            border-bottom: 0.5px solid #2C2C2E;
+        }
+        .fullscreen-header button { background: none; border: none; font-size: 24px; color: #00D26A; padding: 8px; }
+        .fullscreen-header .title { flex: 1; text-align: center; font-weight: 600; color: #FFF; }
+        .fullscreen-content { padding: 16px; width: 100%; overflow-y: auto; }
+        .section { margin-bottom: 24px; border-bottom: 1px solid #2C2C2E; padding-bottom: 16px; }
+        .section-title { font-weight: 600; margin-bottom: 12px; font-size: 16px; color: #FFF; cursor: pointer; user-select: none; }
+        .section-collapsible { display: block; }
+        .section-collapsible.collapsed { display: none; }
+        .worldbook-entry {
+            background: #0C0C0D;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 0.5px solid #3A3A3C;
+        }
+        .worldbook-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .worldbook-header input {
+            flex: 2;
+            margin: 0;
+        }
+        .worldbook-header button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            padding: 4px 8px;
+            cursor: pointer;
+            color: #8E8E93;
+        }
+        .worldbook-content textarea {
+            width: 100%;
+            min-height: 60px;
+        }
+        .add-entry-btn {
+            background: #00D26A;
+            color: #000;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+        textarea, input, select {
+            width: 100%;
+            padding: 10px;
+            border: 0.5px solid #3A3A3C;
+            border-radius: 12px;
+            background: #0C0C0D;
+            color: #FFF;
+            font-family: inherit;
+        }
+        .flex-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; align-items: center; }
+        .small-text { font-size: 11px; color: #8E8E93; margin-top: 4px; }
+        button.danger { background: #FF3B30; color: #FFF; }
+        .data-actions { display: flex; gap: 12px; margin-top: 8px; }
+        .data-actions button { flex: 1; }
+        .context-menu {
+            position: fixed;
+            background: #2C2C2E;
+            border-radius: 30px;
+            display: flex;
+            gap: 4px;
+            padding: 6px 12px;
+            z-index: 3000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .context-menu button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            padding: 8px;
+            color: #FFF;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="toolbar">
+        <div class="left"><button id="regenerateBtn">🍊</button></div>
+        <div class="title" id="titleName">幸芳白</div>
+        <div class="right"><button id="settingsBtn">⚙️</button></div>
+    </div>
+    <div id="chainPanel" class="chain-panel">
+        <div class="chain-label">🧠 思维链（最新）</div>
+        <div id="chainContent" class="chain-content">暂无</div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="input-area">
+        <button id="plusBtn">+</button>
+        <textarea id="userInput" rows="1" placeholder="输入消息..."></textarea>
+        <div class="input-buttons">
+            <button id="triggerBtn">✨</button>
+            <button id="appendBtn">🫧</button>
+        </div>
+    </div>
+    <div class="status" id="statusMsg"></div>
+</div>
+
+<script>
+    // DOM 元素
+    const regenerateBtn = document.getElementById('regenerateBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const titleName = document.getElementById('titleName');
+    const chainPanel = document.getElementById('chainPanel');
+    const chainContentSpan = document.getElementById('chainContent');
+    const chatMessagesDiv = document.getElementById('chatMessages');
+    const userInput = document.getElementById('userInput');
+    const triggerBtn = document.getElementById('triggerBtn');
+    const appendBtn = document.getElementById('appendBtn');
+    const plusBtn = document.getElementById('plusBtn');
+    const statusSpan = document.getElementById('statusMsg');
+
+    // 数据
+    let fullConversation = [];      // {role, content, timestamp, image?}
+    let systemPrompt = '';
+    let currentStartIndex = 0;
+    let lastSummaryIndex = 0;
+    let currentHeart = { heart: "", scene: "", emotion: "", thought: "" };
+    let heartHistory = [];          // {heart, timestamp}
+    let lastChain = "";
+    let userAvatarBase64 = "";
+    let aiAvatarBase64 = "";
+
+    // 世界书条目数组
+    let worldBookEntries = [];      // [{name, content}]
+
+    // 配置
+    let apiUrl = "", modelName = "gemini-2.5-pro", apiKey = "", authType = "bearer", customHeaderName = "";
+    let userSetting = "", fullPersona = "", coreRules = "", longTermMemory = "";
+    let visibleLimit = 30, contextLimit = 150, summaryThreshold = 200, summaryPromptTemplate = "";
+
+    // 辅助函数
+    function setStatus(msg, isError = false) {
+        statusSpan.innerText = msg;
+        statusSpan.style.color = isError ? "#FF3B30" : "#00D26A";
+        setTimeout(() => { if (statusSpan.innerText === msg) statusSpan.innerText = ""; }, 3000);
+    }
+
+    function saveToLocal() {
+        const data = {
+            fullConversation, currentStartIndex, lastSummaryIndex,
+            currentHeart, heartHistory, lastChain,
+            userAvatarBase64, aiAvatarBase64,
+            apiUrl, modelName, apiKey, authType, customHeaderName,
+            userSetting, fullPersona, coreRules, worldBookEntries, longTermMemory,
+            visibleLimit, contextLimit, summaryThreshold, summaryPromptTemplate
+        };
+        localStorage.setItem('fangbai_modern', JSON.stringify(data));
+    }
+
+    function loadFromLocal() {
+        const raw = localStorage.getItem('fangbai_modern');
+        if (!raw) return;
+        try {
+            const d = JSON.parse(raw);
+            fullConversation = d.fullConversation || [];
+            currentStartIndex = d.currentStartIndex || 0;
+            lastSummaryIndex = d.lastSummaryIndex || 0;
+            currentHeart = d.currentHeart || { heart: "", scene: "", emotion: "", thought: "" };
+            heartHistory = d.heartHistory || [];
+            lastChain = d.lastChain || "";
+            userAvatarBase64 = d.userAvatarBase64 || "";
+            aiAvatarBase64 = d.aiAvatarBase64 || "";
+            apiUrl = d.apiUrl || ""; modelName = d.modelName || "gemini-2.5-pro"; apiKey = d.apiKey || "";
+            authType = d.authType || "bearer"; customHeaderName = d.customHeaderName || "";
+            userSetting = d.userSetting || ""; fullPersona = d.fullPersona || ""; coreRules = d.coreRules || "";
+            // 兼容旧格式：如果 d.worldBook 是字符串，转换为默认条目
+            if (d.worldBook !== undefined && typeof d.worldBook === 'string') {
+                worldBookEntries = [{ name: "默认", content: d.worldBook }];
+            } else if (d.worldBookEntries && Array.isArray(d.worldBookEntries)) {
+                worldBookEntries = d.worldBookEntries;
+            } else {
+                worldBookEntries = [];
+            }
+            longTermMemory = d.longTermMemory || "";
+            visibleLimit = d.visibleLimit || 30; contextLimit = d.contextLimit || 150;
+            summaryThreshold = d.summaryThreshold || 200; summaryPromptTemplate = d.summaryPromptTemplate || "";
+            renderChat();
+            updateChainDisplay();
+        } catch(e) { console.error(e); }
+    }
+
+    function buildSystemPrompt() {
+        let parts = [];
+        if (userSetting.trim()) parts.push(userSetting);
+        if (fullPersona.trim()) parts.push(fullPersona);
+        if (coreRules.trim()) parts.push(coreRules);
+        // 世界书：将条目拼接
+        if (worldBookEntries.length > 0) {
+            let worldText = worldBookEntries.map(entry => `【${entry.name}】\n${entry.content}`).join('\n\n');
+            parts.push(worldText);
+        }
+        if (longTermMemory.trim()) parts.push(longTermMemory);
+        // 写作规则
+        parts.push(`写作规则：
+1. POV limit (character only): Describe only the character's actions, expressions, dialogue, thoughts, tone. Do not describe what the user does or thinks. Only react to the user's presence or words.
+2. Write what happens, not what doesn't: Avoid describing what the character does not do. Directly state what they actually do, say, or think. Example: write "他沉默地移开视线" instead of "他没有生气，也没有说话".
+3. No user content filling: Never speak/act/guess for the user. Do not describe the user's tone or unstated intent.
+4. No user tone description: Do not write things like "She hears anger in his voice" or "He sees her hesitate."
+5. Avoid similes: No "像", "仿佛", "如同". Use direct, concrete description. Example: write "他的呼吸变得急促，手在发抖" not "他的怒火像火山一样喷发".`);
+        // 心声JSON要求
+        parts.push(`【重要】每次回复末尾必须输出以下JSON对象（单独一行）：
+{"heart": "心声（一句话，精准短小）","scene": "画面（第三人称，文学感）","emotion": "情绪（第一人称短句）","thought": "想法（详细长篇）","chain": "思维链概括（30-50字）"}
+请确保该JSON之前有一个空行。正常回复内容中不要包含此JSON。`);
+        systemPrompt = parts.join('\n\n');
+        if (systemPrompt) systemPrompt += '\n\n---\n请严格遵循以上设定。';
+    }
+
+    function parseAIResponse(raw) {
+        let jsonMatch = raw.match(/\n?\s*\{[^{]*"heart"[^}]*\}/);
+        let jsonObj = null;
+        let cleanText = raw;
+        if (jsonMatch) {
+            try {
+                jsonObj = JSON.parse(jsonMatch[0]);
+                cleanText = raw.replace(jsonMatch[0], '').trim();
+            } catch(e) {}
+        }
+        if (!jsonObj) {
+            let heartMatch = raw.match(/"heart"\s*:\s*"([^"]+)"/);
+            if (heartMatch) jsonObj = { heart: heartMatch[1] };
+        }
+        if (jsonObj) {
+            if (jsonObj.heart) currentHeart.heart = jsonObj.heart;
+            if (jsonObj.scene) currentHeart.scene = jsonObj.scene;
+            if (jsonObj.emotion) currentHeart.emotion = jsonObj.emotion;
+            if (jsonObj.thought) currentHeart.thought = jsonObj.thought;
+            if (jsonObj.chain) { lastChain = jsonObj.chain; updateChainDisplay(); }
+            if (jsonObj.heart) {
+                heartHistory.unshift({ heart: jsonObj.heart, timestamp: new Date().toLocaleString() });
+                if (heartHistory.length > 20) heartHistory.pop();
+            }
+            saveToLocal();
+        }
+        return cleanText;
+    }
+
+    function updateChainDisplay() {
+        chainContentSpan.innerText = lastChain || "暂无思维链";
+    }
+
+    function renderChat() {
+        let visible = visibleLimit;
+        const total = fullConversation.length;
+        let start = Math.max(0, total - visible);
+        if (currentStartIndex > total) currentStartIndex = start;
+        currentStartIndex = Math.min(currentStartIndex, total);
+        const toShow = fullConversation.slice(currentStartIndex);
+        chatMessagesDiv.innerHTML = '';
+        if (toShow.length === 0) {
+            chatMessagesDiv.innerHTML = '<div class="message assistant">✨ 开始对话吧</div>';
+            return;
+        }
+        for (let i = 0; i < toShow.length; i++) {
+            const msg = toShow[i];
+            const isUser = msg.role === 'user';
+            const isLastOfSame = (i === toShow.length-1) || (toShow[i+1].role !== msg.role);
+            const showAvatar = (i === 0) || (toShow[i-1].role !== msg.role);
+            const avatarUrl = isUser ? userAvatarBase64 : aiAvatarBase64;
+            const avatarText = isUser ? '你' : '白';
+            const rowDiv = document.createElement('div');
+            rowDiv.className = `message-row ${isUser ? 'user-row' : 'assistant-row'}`;
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = `avatar ${!showAvatar ? 'avatar-placeholder' : ''}`;
+            if (showAvatar) {
+                if (avatarUrl) {
+                    const img = document.createElement('img');
+                    img.src = avatarUrl;
+                    avatarDiv.appendChild(img);
+                } else {
+                    avatarDiv.innerText = avatarText;
+                }
+                if (!isUser) {
+                    avatarDiv.style.cursor = 'pointer';
+                    avatarDiv.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showHeartModal();
+                    });
+                }
+            }
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble';
+            if (msg.image) {
+                const img = document.createElement('img');
+                img.src = msg.image;
+                img.className = 'image-preview';
+                bubbleDiv.appendChild(img);
+            }
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerText = msg.content || '';
+            bubbleDiv.appendChild(contentDiv);
+            if (isLastOfSame && msg.timestamp) {
+                const timeSpan = document.createElement('div');
+                timeSpan.className = 'timestamp';
+                timeSpan.innerText = msg.timestamp;
+                bubbleDiv.appendChild(timeSpan);
+            }
+            rowDiv.appendChild(avatarDiv);
+            rowDiv.appendChild(bubbleDiv);
+            rowDiv.addEventListener('contextmenu', (e) => { e.preventDefault(); showContextMenu(e, msg, i + currentStartIndex); });
+            let timer = null;
+            rowDiv.addEventListener('touchstart', (e) => { timer = setTimeout(() => { showContextMenu(e, msg, i + currentStartIndex); }, 500); });
+            rowDiv.addEventListener('touchend', () => { clearTimeout(timer); });
+            chatMessagesDiv.appendChild(rowDiv);
+        }
+        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+    }
+
+    function showContextMenu(e, msg, idx) {
+        e.preventDefault();
+        const oldMenu = document.querySelector('.context-menu');
+        if (oldMenu) oldMenu.remove();
+        const menu = document.createElement('div');
+        menu.className = 'context-menu';
+        const editBtn = document.createElement('button');
+        editBtn.innerText = '✏️';
+        editBtn.onclick = () => {
+            const newContent = prompt('编辑消息内容', msg.content);
+            if (newContent !== null && newContent !== msg.content) {
+                fullConversation[idx].content = newContent;
+                saveToLocal();
+                renderChat();
+            }
+            menu.remove();
+        };
+        const delBtn = document.createElement('button');
+        delBtn.innerText = '🗑️';
+        delBtn.onclick = () => {
+            if (confirm('删除这条消息？')) {
+                fullConversation.splice(idx, 1);
+                if (lastSummaryIndex > idx) lastSummaryIndex--;
+                saveToLocal();
+                renderChat();
+            }
+            menu.remove();
+        };
+        const copyBtn = document.createElement('button');
+        copyBtn.innerText = '📋';
+        copyBtn.onclick = () => {
+            navigator.clipboard.writeText(msg.content);
+            setStatus('已复制');
+            menu.remove();
+        };
+        menu.appendChild(editBtn);
+        menu.appendChild(delBtn);
+        menu.appendChild(copyBtn);
+        document.body.appendChild(menu);
+        let x = e.clientX, y = e.clientY;
+        if (e.touches) { x = e.touches[0].clientX; y = e.touches[0].clientY; }
+        menu.style.left = x + 'px';
+        menu.style.top = y + 'px';
+        setTimeout(() => { document.addEventListener('click', function rm() { menu.remove(); document.removeEventListener('click', rm); }); }, 100);
+    }
+
+    function showHeartModal() {
+        const modalDiv = document.createElement('div');
+        modalDiv.className = 'modal';
+        const card = document.createElement('div');
+        card.className = 'modal-card';
+        card.innerHTML = `
+            <h3>💭 幸芳白·心声 <span class="close">&times;</span></h3>
+            <div class="heart-item"><div class="heart-label">💖 心声</div><div class="heart-text">${escapeHtml(currentHeart.heart || '暂无')}</div></div>
+            <div class="heart-item"><div class="heart-label">🎬 画面</div><div class="heart-text">${escapeHtml(currentHeart.scene || '暂无')}</div></div>
+            <div class="heart-item"><div class="heart-label">😊 情绪</div><div class="heart-text">${escapeHtml(currentHeart.emotion || '暂无')}</div></div>
+            <div class="heart-item"><div class="heart-label">💭 想法</div><div class="heart-text">${escapeHtml(currentHeart.thought || '暂无')}</div></div>
+            <button class="history-btn" id="historyHeartBtn">📜 历史心声</button>
+        `;
+        modalDiv.appendChild(card);
+        document.body.appendChild(modalDiv);
+        card.querySelector('.close').onclick = () => modalDiv.remove();
+        card.querySelector('#historyHeartBtn').onclick = () => {
+            const historyModal = document.createElement('div');
+            historyModal.className = 'modal';
+            const historyCard = document.createElement('div');
+            historyCard.className = 'modal-card';
+            historyCard.innerHTML = `<h3>📜 历史心声 <span class="close">&times;</span></h3><div class="history-list" id="historyList"></div>`;
+            historyModal.appendChild(historyCard);
+            document.body.appendChild(historyModal);
+            const listDiv = historyCard.querySelector('#historyList');
+            if (heartHistory.length === 0) listDiv.innerText = '暂无历史心声';
+            else {
+                heartHistory.forEach(h => {
+                    const entry = document.createElement('div');
+                    entry.className = 'history-entry';
+                    entry.innerHTML = `<div class="history-time">${escapeHtml(h.timestamp)}</div><div>${escapeHtml(h.heart)}</div>`;
+                    listDiv.appendChild(entry);
+                });
+            }
+            historyCard.querySelector('.close').onclick = () => historyModal.remove();
+        };
+    }
+
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    function appendUserMessage(text, imageBase64 = null) {
+        if (!text && !imageBase64) { setStatus('消息不能为空', true); return; }
+        const msg = { role: 'user', content: text || '', timestamp: new Date().toLocaleTimeString() };
+        if (imageBase64) msg.image = imageBase64;
+        fullConversation.push(msg);
+        saveToLocal();
+        renderChat();
+        setStatus('已追加');
+    }
+
+    async function triggerAI() {
+        let text = userInput.value.trim();
+        let pendingImage = window.pendingImageBase64 || null;
+        if (!text && !pendingImage) { setStatus('消息不能为空', true); return; }
+        if (!apiUrl || !apiKey) { setStatus('请先配置API', true); return; }
+        const userMsg = { role: 'user', content: text || '', timestamp: new Date().toLocaleTimeString() };
+        if (pendingImage) userMsg.image = pendingImage;
+        fullConversation.push(userMsg);
+        window.pendingImageBase64 = null;
+        userInput.value = '';
+        saveToLocal();
+        renderChat();
+
+        buildSystemPrompt();
+        const contextMsgs = fullConversation.slice(-contextLimit);
+        const now = new Date();
+        const timeStr = `【真实时间】${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()} ${now.getHours()}:${now.getMinutes()}`;
+        const apiMessages = [];
+        if (systemPrompt) apiMessages.push({ role: 'system', content: systemPrompt });
+        apiMessages.push({ role: 'system', content: `当前时间：${timeStr}。请按格式输出。` });
+        for (let m of contextMsgs) {
+            if (m.role === 'user' && m.image) {
+                apiMessages.push({
+                    role: 'user',
+                    content: [
+                        { type: 'text', text: m.content || '' },
+                        { type: 'image_url', image_url: { url: m.image } }
+                    ]
+                });
+            } else {
+                apiMessages.push({ role: m.role, content: m.content });
+            }
+        }
+        let headers = { 'Content-Type': 'application/json' };
+        if (authType === 'bearer') headers['Authorization'] = `Bearer ${apiKey}`;
+        else if (authType === 'direct') headers['Authorization'] = apiKey;
+        else if (authType === 'custom') headers[customHeaderName || 'x-api-key'] = apiKey;
+        const body = { model: modelName, messages: apiMessages, temperature: 0.8, max_tokens: 1000 };
+        setStatus('AI思考中...');
+        try {
+            const resp = await fetch(apiUrl + '/chat/completions', { method: 'POST', headers, body: JSON.stringify(body) });
+            if (!resp.ok) throw new Error(await resp.text());
+            const data = await resp.json();
+            let reply = data.choices[0].message.content;
+            const cleanReply = parseAIResponse(reply);
+            const lines = cleanReply.split(/\r?\n/).filter(l => l.trim().length > 0);
+            for (let line of lines) {
+                fullConversation.push({ role: 'assistant', content: line, timestamp: new Date().toLocaleTimeString() });
+            }
+            saveToLocal();
+            renderChat();
+            setStatus('回复完成');
+        } catch(err) { setStatus('错误: '+err.message, true); }
+    }
+
+    async function regenerate() {
+        let lastUserIdx = -1;
+        for (let i = fullConversation.length-1; i >= 0; i--) {
+            if (fullConversation[i].role === 'user') { lastUserIdx = i; break; }
+        }
+        if (lastUserIdx === -1) { setStatus('没有用户消息可重新生成', true); return; }
+        fullConversation = fullConversation.slice(0, lastUserIdx+1);
+        if (!apiUrl || !apiKey) { setStatus('请配置API', true); return; }
+        buildSystemPrompt();
+        const contextMsgs = fullConversation.slice(-contextLimit);
+        const now = new Date();
+        const timeStr = `【真实时间】${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()} ${now.getHours()}:${now.getMinutes()}`;
+        const apiMessages = [];
+        if (systemPrompt) apiMessages.push({ role: 'system', content: systemPrompt });
+        apiMessages.push({ role: 'system', content: `当前时间：${timeStr}。请按格式输出。` });
+        for (let m of contextMsgs) {
+            if (m.role === 'user' && m.image) {
+                apiMessages.push({
+                    role: 'user',
+                    content: [
+                        { type: 'text', text: m.content || '' },
+                        { type: 'image_url', image_url: { url: m.image } }
+                    ]
+                });
+            } else {
+                apiMessages.push({ role: m.role, content: m.content });
+            }
+        }
+        let headers = { 'Content-Type': 'application/json' };
+        if (authType === 'bearer') headers['Authorization'] = `Bearer ${apiKey}`;
+        else if (authType === 'direct') headers['Authorization'] = apiKey;
+        else if (authType === 'custom') headers[customHeaderName || 'x-api-key'] = apiKey;
+        const body = { model: modelName, messages: apiMessages, temperature: 0.8, max_tokens: 1000 };
+        setStatus('重新生成中...');
+        try {
+            const resp = await fetch(apiUrl + '/chat/completions', { method: 'POST', headers, body: JSON.stringify(body) });
+            if (!resp.ok) throw new Error(await resp.text());
+            const data = await resp.json();
+            let reply = data.choices[0].message.content;
+            const cleanReply = parseAIResponse(reply);
+            const lines = cleanReply.split(/\r?\n/).filter(l => l.trim().length > 0);
+            for (let line of lines) {
+                fullConversation.push({ role: 'assistant', content: line, timestamp: new Date().toLocaleTimeString() });
+            }
+            saveToLocal();
+            renderChat();
+            setStatus('已重新生成');
+        } catch(err) { setStatus('错误: '+err.message, true); }
+    }
+
+    function selectImage() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    window.pendingImageBase64 = ev.target.result;
+                    setStatus('图片已选，可输入文字后发送');
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        input.click();
+    }
+
+    // 世界书UI动态渲染
+    function renderWorldBookUI(container) {
+        container.innerHTML = '';
+        worldBookEntries.forEach((entry, idx) => {
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'worldbook-entry';
+            entryDiv.innerHTML = `
+                <div class="worldbook-header">
+                    <input type="text" placeholder="条目名称" value="${escapeHtml(entry.name)}" data-name-idx="${idx}">
+                    <button class="move-up" data-idx="${idx}" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>▲</button>
+                    <button class="move-down" data-idx="${idx}" ${idx === worldBookEntries.length-1 ? 'disabled style="opacity:0.3"' : ''}>▼</button>
+                    <button class="delete-entry" data-idx="${idx}">🗑️</button>
+                </div>
+                <div class="worldbook-content">
+                    <textarea rows="2" placeholder="条目内容" data-content-idx="${idx}">${escapeHtml(entry.content)}</textarea>
+                </div>
+            `;
+            container.appendChild(entryDiv);
+        });
+        // 绑定事件
+        container.querySelectorAll('.move-up').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(btn.dataset.idx);
+                if (idx > 0) {
+                    [worldBookEntries[idx-1], worldBookEntries[idx]] = [worldBookEntries[idx], worldBookEntries[idx-1]];
+                    saveToLocal();
+                    renderWorldBookUI(container);
+                }
+            });
+        });
+        container.querySelectorAll('.move-down').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(btn.dataset.idx);
+                if (idx < worldBookEntries.length-1) {
+                    [worldBookEntries[idx+1], worldBookEntries[idx]] = [worldBookEntries[idx], worldBookEntries[idx+1]];
+                    saveToLocal();
+                    renderWorldBookUI(container);
+                }
+            });
+        });
+        container.querySelectorAll('.delete-entry').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(btn.dataset.idx);
+                worldBookEntries.splice(idx, 1);
+                saveToLocal();
+                renderWorldBookUI(container);
+            });
+        });
+        container.querySelectorAll('input[data-name-idx]').forEach(inp => {
+            inp.addEventListener('change', (e) => {
+                const idx = parseInt(inp.dataset.nameIdx);
+                worldBookEntries[idx].name = inp.value;
+                saveToLocal();
+            });
+        });
+        container.querySelectorAll('textarea[data-content-idx]').forEach(ta => {
+            ta.addEventListener('change', (e) => {
+                const idx = parseInt(ta.dataset.contentIdx);
+                worldBookEntries[idx].content = ta.value;
+                saveToLocal();
+            });
+        });
+    }
+
+    function showSettingsModal() {
+        const modal = document.createElement('div');
+        modal.className = 'fullscreen-modal';
+        modal.innerHTML = `
+            <div class="fullscreen-header"><button id="closeSettings">←</button><div class="title">设置</div><div></div></div>
+            <div class="fullscreen-content">
+                <div class="section"><div class="section-title">🔌 API</div>
+                    <input id="setApiUrl" placeholder="API地址" value="${escapeHtml(apiUrl)}">
+                    <input id="setModel" placeholder="模型名" value="${escapeHtml(modelName)}">
+                    <input id="setApiKey" type="password" placeholder="API Key" value="${escapeHtml(apiKey)}">
+                    <select id="setAuthType"><option value="bearer">Bearer</option><option value="direct">直接Key</option><option value="custom">自定义Header</option></select>
+                    <input id="setCustomHeader" placeholder="自定义Header名" value="${escapeHtml(customHeaderName)}">
+                </div>
+                <div class="section"><div class="section-title">📝 设定</div>
+                    <textarea id="setUserSetting" placeholder="用户设定">${escapeHtml(userSetting)}</textarea>
+                    <textarea id="setFullPersona" placeholder="完整人设">${escapeHtml(fullPersona)}</textarea>
+                    <textarea id="setCoreRules" placeholder="精简指令">${escapeHtml(coreRules)}</textarea>
+                    <div class="section-title" id="worldbookToggle">🌍 世界书 (点击展开/收起)</div>
+                    <div id="worldbookContainer" class="section-collapsible collapsed" style="margin-bottom: 16px;"></div>
+                    <button id="addWorldEntry" class="add-entry-btn">+ 添加条目</button>
+                    <textarea id="setLongTermMemory" placeholder="长期记忆">${escapeHtml(longTermMemory)}</textarea>
+                </div>
+                <div class="section"><div class="section-title">⚙️ 对话设置</div>
+                    <div class="flex-row"><span>UI显示最近:</span><input type="number" id="setVisibleLimit" value="${visibleLimit}"></div>
+                    <div class="flex-row"><span>AI上下文:</span><input type="number" id="setContextLimit" value="${contextLimit}"></div>
+                </div>
+                <div class="section"><div class="section-title">🖼️ 头像</div>
+                    <div>用户头像: <input type="file" id="userAvatarFile" accept="image/*"></div>
+                    <div>幸芳白头像: <input type="file" id="aiAvatarFile" accept="image/*"></div>
+                </div>
+                <div class="section"><div class="section-title">📦 数据</div>
+                    <div class="data-actions"><button id="exportDataBtn">📤 导出</button><button id="importDataBtn">📥 导入</button><input type="file" id="importFile" style="display:none"></div>
+                    <button id="clearAllChatBtn" class="danger" style="margin-top:12px">🗑️ 清空全部对话</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('closeSettings').onclick = () => modal.remove();
+
+        // 世界书折叠/展开
+        const worldbookToggle = document.getElementById('worldbookToggle');
+        const worldbookContainer = document.getElementById('worldbookContainer');
+        worldbookToggle.style.cursor = 'pointer';
+        worldbookToggle.onclick = () => {
+            worldbookContainer.classList.toggle('collapsed');
+        };
+        // 渲染世界书列表
+        const worldbookDiv = document.getElementById('worldbookContainer');
+        const renderWorld = () => renderWorldBookUI(worldbookDiv);
+        renderWorld();
+        document.getElementById('addWorldEntry').onclick = () => {
+            worldBookEntries.push({ name: "新条目", content: "" });
+            saveToLocal();
+            renderWorld();
+        };
+
+        document.getElementById('exportDataBtn').onclick = () => exportData();
+        document.getElementById('importDataBtn').onclick = () => document.getElementById('importFile').click();
+        document.getElementById('importFile').onchange = (e) => importData(e.target.files[0]);
+        document.getElementById('clearAllChatBtn').onclick = () => {
+            if (confirm('清空全部对话？不可撤销')) {
+                fullConversation = []; currentStartIndex = 0; lastSummaryIndex = 0;
+                currentHeart = { heart: "", scene: "", emotion: "", thought: "" };
+                heartHistory = []; lastChain = "";
+                saveToLocal(); renderChat(); setStatus('已清空');
+                modal.remove();
+            }
+        };
+        document.getElementById('userAvatarFile').onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => { userAvatarBase64 = ev.target.result; saveToLocal(); renderChat(); };
+                reader.readAsDataURL(file);
+            }
+        };
+        document.getElementById('aiAvatarFile').onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => { aiAvatarBase64 = ev.target.result; saveToLocal(); renderChat(); };
+                reader.readAsDataURL(file);
+            }
+        };
+        const saveSettings = () => {
+            apiUrl = document.getElementById('setApiUrl').value;
+            modelName = document.getElementById('setModel').value;
+            apiKey = document.getElementById('setApiKey').value;
+            authType = document.getElementById('setAuthType').value;
+            customHeaderName = document.getElementById('setCustomHeader').value;
+            userSetting = document.getElementById('setUserSetting').value;
+            fullPersona = document.getElementById('setFullPersona').value;
+            coreRules = document.getElementById('setCoreRules').value;
+            longTermMemory = document.getElementById('setLongTermMemory').value;
+            visibleLimit = parseInt(document.getElementById('setVisibleLimit').value) || 30;
+            contextLimit = parseInt(document.getElementById('setContextLimit').value) || 150;
+            // 世界书已经在 renderWorld 中实时保存，无需额外操作
+            saveToLocal();
+            setStatus('设置已保存');
+            modal.remove();
+        };
+        const saveBtn = document.createElement('button');
+        saveBtn.innerText = '保存并关闭';
+        saveBtn.style.marginTop = '20px';
+        saveBtn.onclick = saveSettings;
+        modal.querySelector('.fullscreen-content').appendChild(saveBtn);
+    }
+
+    async function exportData() {
+        const data = { fullConversation, currentHeart, heartHistory, lastChain, userAvatarBase64, aiAvatarBase64, apiUrl, modelName, apiKey, authType, customHeaderName, userSetting, fullPersona, coreRules, worldBookEntries, longTermMemory, visibleLimit, contextLimit, summaryThreshold, summaryPromptTemplate };
+        const jsonStr = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonStr], {type: 'application/json'});
+        if (navigator.share) {
+            try {
+                await navigator.share({ files: [new File([blob], 'fangbai_backup.json', {type: 'application/json'})] });
+            } catch(e) { fallbackDownload(blob); }
+        } else { fallbackDownload(blob); }
+    }
+    function fallbackDownload(blob) {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'fangbai_backup.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+        setStatus('已下载到下载文件夹');
+    }
+    function importData(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const d = JSON.parse(e.target.result);
+                fullConversation = d.fullConversation || [];
+                currentHeart = d.currentHeart || { heart: "", scene: "", emotion: "", thought: "" };
+                heartHistory = d.heartHistory || [];
+                lastChain = d.lastChain || "";
+                userAvatarBase64 = d.userAvatarBase64 || "";
+                aiAvatarBase64 = d.aiAvatarBase64 || "";
+                apiUrl = d.apiUrl || ""; modelName = d.modelName || "gemini-2.5-pro"; apiKey = d.apiKey || "";
+                authType = d.authType || "bearer"; customHeaderName = d.customHeaderName || "";
+                userSetting = d.userSetting || ""; fullPersona = d.fullPersona || ""; coreRules = d.coreRules || "";
+                if (d.worldBookEntries) worldBookEntries = d.worldBookEntries;
+                else if (d.worldBook) worldBookEntries = [{ name: "默认", content: d.worldBook }];
+                else worldBookEntries = [];
+                longTermMemory = d.longTermMemory || "";
+                visibleLimit = d.visibleLimit || 30; contextLimit = d.contextLimit || 150;
+                saveToLocal(); renderChat(); setStatus('导入成功');
+            } catch(e) { setStatus('导入失败', true); }
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
+
+    // 事件绑定
+    regenerateBtn.onclick = () => regenerate();
+    settingsBtn.onclick = () => showSettingsModal();
+    titleName.onclick = () => chainPanel.classList.toggle('open');
+    triggerBtn.onclick = () => triggerAI();
+    appendBtn.onclick = () => { appendUserMessage(userInput.value.trim()); userInput.value = ''; };
+    plusBtn.onclick = () => {
+        const existing = document.querySelector('.plus-menu');
+        if (existing) { existing.remove(); return; }
+        const menu = document.createElement('div');
+        menu.className = 'plus-menu';
+        const photoBtn = document.createElement('button');
+        photoBtn.innerText = '📷';
+        photoBtn.onclick = () => { selectImage(); menu.remove(); };
+        menu.appendChild(photoBtn);
+        document.body.appendChild(menu);
+        const rect = plusBtn.getBoundingClientRect();
+        menu.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
+        menu.style.left = rect.left + 'px';
+        document.addEventListener('click', function rm(e) { if (!menu.contains(e.target) && e.target !== plusBtn) { menu.remove(); document.removeEventListener('click', rm); } });
+    };
+    userInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); triggerAI(); }
+    });
+
+    loadFromLocal();
+    buildSystemPrompt();
+    renderChat();
+</script>
+</body>
+</html>

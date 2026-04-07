@@ -60,6 +60,8 @@
             cursor: pointer;
             padding: 8px;
             border-radius: 20px;
+            text-align: center;
+            flex: 1;
         }
         .chain-panel {
             background: #F9F9F9;
@@ -81,11 +83,12 @@
             flex-direction: column;
             gap: 8px;
         }
-        /* 消息行：flex 布局，头像在两端 */
+        /* 消息行 */
         .message-row {
             display: flex;
             align-items: flex-start;
             gap: 8px;
+            flex-wrap: wrap;
         }
         .user-row {
             justify-content: flex-end;
@@ -93,7 +96,7 @@
         .assistant-row {
             justify-content: flex-start;
         }
-        /* 头像容器 */
+        /* 头像 */
         .avatar {
             width: 36px;
             height: 36px;
@@ -116,9 +119,13 @@
         .avatar-placeholder {
             visibility: hidden;
         }
-        /* 气泡 */
-        .message-bubble {
+        /* 气泡容器 */
+        .bubble-wrapper {
             max-width: 75%;
+            display: flex;
+            flex-direction: column;
+        }
+        .message-bubble {
             padding: 10px 14px;
             border-radius: 20px;
             line-height: 1.4;
@@ -189,10 +196,10 @@
             border-radius: 30px;
             transition: 0.2s;
         }
-        #triggerBtn { background: #007AFF; color: #FFF; }
-        #appendBtn { background: #E5E5EA; color: #007AFF; }
-        #plusBtn { background: #E5E5EA; color: #007AFF; font-size: 28px; padding: 8px 12px; border-radius: 30px; }
-        .plus-menu {
+            #triggerBtn { background: none; color: #007AFF; }
+            #appendBtn { background: none; color: #007AFF; }
+            #plusBtn { background: none; color: #007AFF; font-size: 28px; padding: 8px 12px; }
+                    .plus-menu {
             position: fixed;
             bottom: 80px;
             left: 20px;
@@ -211,6 +218,7 @@
             padding: 8px;
             cursor: pointer;
         }
+        /* 状态栏 - 移到输入框上方 */
         .status {
             padding: 6px 12px;
             font-size: 11px;
@@ -218,6 +226,7 @@
             background: #F2F2F7;
             text-align: center;
             flex-shrink: 0;
+            border-top: 0.5px solid #C6C6C8;
         }
         /* 模态框 */
         .modal, .fullscreen-modal {
@@ -241,6 +250,38 @@
             overflow-y: auto;
             padding: 20px;
             color: #000;
+            position: relative;
+        }
+        .modal-card h3 {
+            margin-top: 0;
+            text-align: center;
+        }
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #007AFF;
+        }
+        .heart-section {
+            margin-bottom: 20px;
+        }
+        .heart-label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #007AFF;
+        }
+        .history-btn {
+            background: #E5E5EA;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 60px;
         }
         .fullscreen-modal {
             background: #F2F2F7;
@@ -262,7 +303,6 @@
         .section-title { font-weight: 600; margin-bottom: 12px; font-size: 16px; color: #000; cursor: pointer; user-select: none; }
         .section-collapsible { display: block; }
         .section-collapsible.collapsed { display: none; }
-        /* 世界书/长期记忆条目 */
         .memory-entry {
             background: #FFFFFF;
             border-radius: 12px;
@@ -316,7 +356,6 @@
         button.danger { background: #FF3B30; color: #FFF; }
         .data-actions { display: flex; gap: 12px; margin-top: 8px; }
         .data-actions button { flex: 1; }
-        /* 弹出菜单（横排，自动边界） */
         .context-menu {
             position: fixed;
             background: #FFFFFF;
@@ -336,7 +375,6 @@
             cursor: pointer;
             color: #007AFF;
         }
-        /* 按钮居中 */
         .center-buttons {
             display: flex;
             flex-direction: column;
@@ -364,6 +402,7 @@
         <div id="chainContent" class="chain-content">暂无</div>
     </div>
     <div class="chat-messages" id="chatMessages"></div>
+    <div class="status" id="statusMsg"></div>
     <div class="input-area">
         <button id="plusBtn">+</button>
         <textarea id="userInput" rows="1" placeholder="输入消息..."></textarea>
@@ -372,7 +411,6 @@
             <button id="appendBtn">🫧</button>
         </div>
     </div>
-    <div class="status" id="statusMsg"></div>
 </div>
 
 <script>
@@ -470,12 +508,12 @@
             let longText = longTermEntries.map(entry => `【${entry.title}】\n${entry.content}`).join('\n\n');
             parts.push(longText);
         }
-        // 心声JSON要求（不要写作规则）
-        parts.push(`【重要】每次回复末尾必须输出以下JSON对象（单独一行）：
+        // 强化心声要求
+        parts.push(`【极其重要】每次回复末尾必须单独一行输出以下JSON，绝对不能忘记，绝对不能缺少：
 {"heart": "心声（一句话，精准短小）","scene": "画面（第三人称，文学感）","emotion": "情绪（第一人称短句）","thought": "想法（详细长篇）","chain": "思维链概括（30-50字）"}
-请确保该JSON之前有一个空行。正常回复内容中不要包含此JSON。`);
+请确保该JSON之前有一个空行。正常回复内容中不要包含此JSON。如果你不输出这个JSON，系统将无法记录心声，你会受到惩罚。`);
         systemPrompt = parts.join('\n\n');
-        if (systemPrompt) systemPrompt += '\n\n---\n请严格遵循以上设定。';
+        if (systemPrompt) systemPrompt += '\n\n---\n请严格遵循以上设定，尤其是必须输出JSON。';
     }
 
     function parseAIResponse(raw) {
@@ -490,8 +528,20 @@
             } catch(e) {}
         }
         if (!jsonObj) {
-            let heartMatch = raw.match(/"heart"\s*:\s*"([^"]+)"/);
-            if (heartMatch) jsonObj = { heart: heartMatch[1] };
+            // 尝试更宽松的匹配
+            const heartMatch = raw.match(/"heart"\s*:\s*"([^"]+)"/);
+            if (heartMatch) {
+                jsonObj = { heart: heartMatch[1] };
+                // 尝试提取其他字段
+                const sceneMatch = raw.match(/"scene"\s*:\s*"([^"]+)"/);
+                if (sceneMatch) jsonObj.scene = sceneMatch[1];
+                const emotionMatch = raw.match(/"emotion"\s*:\s*"([^"]+)"/);
+                if (emotionMatch) jsonObj.emotion = emotionMatch[1];
+                const thoughtMatch = raw.match(/"thought"\s*:\s*"([^"]+)"/);
+                if (thoughtMatch) jsonObj.thought = thoughtMatch[1];
+                const chainMatch = raw.match(/"chain"\s*:\s*"([^"]+)"/);
+                if (chainMatch) jsonObj.chain = chainMatch[1];
+            }
         }
         if (jsonObj) {
             if (jsonObj.heart) currentHeart.heart = jsonObj.heart;
@@ -504,6 +554,9 @@
                 if (heartHistory.length > 20) heartHistory.pop();
             }
             saveToLocal();
+        } else {
+            // 如果没有找到任何心声，设置默认值
+            currentHeart = { heart: "（暂无心声）", scene: "", emotion: "", thought: "" };
         }
         // 移除可能残留的 <br> 标签
         cleanText = cleanText.replace(/<br\s*\/?>/gi, '\n');
@@ -529,12 +582,14 @@
         for (let i = 0; i < toShow.length; i++) {
             const msg = toShow[i];
             const isUser = msg.role === 'user';
+            const isLastOfSame = (i === toShow.length-1) || (toShow[i+1].role !== msg.role);
             const showAvatar = (i === 0) || (toShow[i-1].role !== msg.role);
             const avatarUrl = isUser ? userAvatarBase64 : aiAvatarBase64;
             const avatarText = isUser ? '你' : '白';
             const rowDiv = document.createElement('div');
             rowDiv.className = `message-row ${isUser ? 'user-row' : 'assistant-row'}`;
-            // 头像：用户消息在右边，AI消息在左边
+
+            // 左侧头像（仅AI）
             if (!isUser) {
                 const avatarDiv = document.createElement('div');
                 avatarDiv.className = `avatar ${!showAvatar ? 'avatar-placeholder' : ''}`;
@@ -554,6 +609,10 @@
                 }
                 rowDiv.appendChild(avatarDiv);
             }
+
+            // 气泡包装器（包含气泡和时间戳）
+            const bubbleWrapper = document.createElement('div');
+            bubbleWrapper.className = 'bubble-wrapper';
             const bubbleDiv = document.createElement('div');
             bubbleDiv.className = 'message-bubble';
             if (msg.image) {
@@ -566,7 +625,17 @@
             contentDiv.className = 'message-content';
             contentDiv.innerText = msg.content || '';
             bubbleDiv.appendChild(contentDiv);
-            rowDiv.appendChild(bubbleDiv);
+            bubbleWrapper.appendChild(bubbleDiv);
+            // 只在同角色最后一条显示时间戳
+            if (isLastOfSame && msg.timestamp) {
+                const timestampDiv = document.createElement('div');
+                timestampDiv.className = 'timestamp';
+                timestampDiv.innerText = msg.timestamp;
+                bubbleWrapper.appendChild(timestampDiv);
+            }
+            rowDiv.appendChild(bubbleWrapper);
+
+            // 右侧头像（仅用户）
             if (isUser) {
                 const avatarDiv = document.createElement('div');
                 avatarDiv.className = `avatar ${!showAvatar ? 'avatar-placeholder' : ''}`;
@@ -578,19 +647,12 @@
                     } else {
                         avatarDiv.innerText = avatarText;
                     }
-                    // 用户头像无点击事件
                 }
                 rowDiv.appendChild(avatarDiv);
             }
-            // 时间戳放在气泡外部下方
-            const timestampDiv = document.createElement('div');
-            timestampDiv.className = 'timestamp';
-            timestampDiv.innerText = msg.timestamp || '';
-            // 将时间戳插入到消息行末尾（气泡下方）
-            rowDiv.appendChild(timestampDiv);
+
             // 点击消息弹出菜单（短按）
             rowDiv.addEventListener('click', (e) => {
-                // 防止点到内部按钮冒泡
                 if (e.target.tagName === 'BUTTON') return;
                 showContextMenu(e, msg, i + currentStartIndex);
             });
@@ -639,10 +701,8 @@
         menu.appendChild(delBtn);
         menu.appendChild(copyBtn);
         document.body.appendChild(menu);
-        // 获取点击位置
         let x = e.clientX, y = e.clientY;
         if (e.touches) { x = e.touches[0].clientX; y = e.touches[0].clientY; }
-        // 自动调整边界，防止超出屏幕
         const menuRect = menu.getBoundingClientRect();
         let left = x;
         let top = y + 10;
@@ -665,12 +725,13 @@
         const card = document.createElement('div');
         card.className = 'modal-card';
         card.innerHTML = `
-            <h3>💭 幸芳白·心声 <span class="close">&times;</span></h3>
-            <div><strong>💖 心声</strong><br>${escapeHtml(currentHeart.heart || '暂无')}</div>
-            <div style="margin-top:12px"><strong>🎬 画面</strong><br>${escapeHtml(currentHeart.scene || '暂无')}</div>
-            <div style="margin-top:12px"><strong>😊 情绪</strong><br>${escapeHtml(currentHeart.emotion || '暂无')}</div>
-            <div style="margin-top:12px"><strong>💭 想法</strong><br>${escapeHtml(currentHeart.thought || '暂无')}</div>
-            <button class="history-btn" id="historyHeartBtn" style="margin-top:16px">📜 历史心声</button>
+            <h3>💭 幸芳白·心声</h3>
+            <span class="close">&times;</span>
+            <button class="history-btn" id="historyHeartBtn">📜 历史心声</button>
+            <div class="heart-section"><div class="heart-label">💖 心声</div><div>${escapeHtml(currentHeart.heart || '暂无')}</div></div>
+            <div class="heart-section"><div class="heart-label">🎬 画面</div><div>${escapeHtml(currentHeart.scene || '暂无')}</div></div>
+            <div class="heart-section"><div class="heart-label">😊 情绪</div><div>${escapeHtml(currentHeart.emotion || '暂无')}</div></div>
+            <div class="heart-section"><div class="heart-label">💭 想法</div><div>${escapeHtml(currentHeart.thought || '暂无')}</div></div>
         `;
         modalDiv.appendChild(card);
         document.body.appendChild(modalDiv);
@@ -746,21 +807,20 @@
         if (authType === 'bearer') headers['Authorization'] = `Bearer ${apiKey}`;
         else if (authType === 'direct') headers['Authorization'] = apiKey;
         const body = { model: modelName, messages: apiMessages, temperature: 0.8, max_tokens: 1000 };
-        setStatus('AI思考中...');
+        setStatus('对方正在输入...');
         try {
             const resp = await fetch(apiUrl + '/chat/completions', { method: 'POST', headers, body: JSON.stringify(body) });
             if (!resp.ok) throw new Error(await resp.text());
             const data = await resp.json();
             let reply = data.choices[0].message.content;
             const cleanReply = parseAIResponse(reply);
-            // 按换行拆分成多个气泡
             const lines = cleanReply.split(/\r?\n/).filter(l => l.trim().length > 0);
             for (let line of lines) {
                 fullConversation.push({ role: 'assistant', content: line, timestamp: new Date().toLocaleTimeString() });
             }
             saveToLocal();
             renderChat();
-            setStatus('回复完成');
+            setStatus('');
         } catch(err) { setStatus('错误: '+err.message, true); }
     }
 
@@ -796,7 +856,7 @@
         if (authType === 'bearer') headers['Authorization'] = `Bearer ${apiKey}`;
         else if (authType === 'direct') headers['Authorization'] = apiKey;
         const body = { model: modelName, messages: apiMessages, temperature: 0.8, max_tokens: 1000 };
-        setStatus('重新生成中...');
+        setStatus('对方正在输入...');
         try {
             const resp = await fetch(apiUrl + '/chat/completions', { method: 'POST', headers, body: JSON.stringify(body) });
             if (!resp.ok) throw new Error(await resp.text());
@@ -809,7 +869,7 @@
             }
             saveToLocal();
             renderChat();
-            setStatus('已重新生成');
+            setStatus('');
         } catch(err) { setStatus('错误: '+err.message, true); }
     }
 
@@ -831,7 +891,7 @@
         input.click();
     }
 
-    // 长期记忆UI动态渲染
+    // 长期记忆UI
     function renderLongTermUI(container) {
         container.innerHTML = '';
         longTermEntries.forEach((entry, idx) => {
@@ -894,7 +954,6 @@
         });
     }
 
-    // 世界书UI动态渲染
     function renderWorldBookUI(container) {
         container.innerHTML = '';
         worldBookEntries.forEach((entry, idx) => {
@@ -957,7 +1016,6 @@
         });
     }
 
-    // 手动总结
     async function manualSummarize() {
         if (!apiUrl || !apiKey) { setStatus('请先配置API', true); return; }
         const total = fullConversation.length;
@@ -988,7 +1046,6 @@
             lastSummaryIndex = total;
             saveToLocal();
             setStatus('总结已添加到长期记忆');
-            // 刷新设置界面（如果打开）
             const settingsModal = document.querySelector('.fullscreen-modal');
             if (settingsModal) {
                 const container = settingsModal.querySelector('#longTermContainer');
@@ -1042,18 +1099,15 @@
         document.body.appendChild(modal);
         document.getElementById('closeSettings').onclick = () => modal.remove();
 
-        // 世界书折叠
         const worldbookToggle = document.getElementById('worldbookToggle');
         const worldbookContainer = document.getElementById('worldbookContainer');
         worldbookToggle.style.cursor = 'pointer';
         worldbookToggle.onclick = () => worldbookContainer.classList.toggle('collapsed');
-        // 长期记忆折叠
         const longtermToggle = document.getElementById('longtermToggle');
         const longTermContainer = document.getElementById('longTermContainer');
         longtermToggle.style.cursor = 'pointer';
         longtermToggle.onclick = () => longTermContainer.classList.toggle('collapsed');
 
-        // 渲染世界书
         const worldbookDiv = document.getElementById('worldbookContainer');
         const renderWorld = () => renderWorldBookUI(worldbookDiv);
         renderWorld();
@@ -1062,7 +1116,6 @@
             saveToLocal();
             renderWorld();
         };
-        // 渲染长期记忆
         const longTermDiv = document.getElementById('longTermContainer');
         const renderLong = () => renderLongTermUI(longTermDiv);
         renderLong();
@@ -1072,10 +1125,7 @@
             renderLong();
         };
         document.getElementById('manualSummaryBtn').onclick = () => {
-            manualSummarize().then(() => {
-                renderLong();
-                setStatus('总结完成');
-            });
+            manualSummarize().then(() => renderLong());
         };
 
         document.getElementById('exportDataBtn').onclick = () => exportData();
@@ -1191,7 +1241,6 @@
         menu.style.left = rect.left + 'px';
         document.addEventListener('click', function rm(e) { if (!menu.contains(e.target) && e.target !== plusBtn) { menu.remove(); document.removeEventListener('click', rm); } });
     };
-    // 回车 = 追加（不触发）
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
